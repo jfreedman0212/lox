@@ -1,0 +1,20 @@
+<project>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>dev.freedman</groupId>
+    <artifactId>jlox</artifactId>
+    <version>1</version>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <mainClass>dev.freedman.jlox.JLox</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
