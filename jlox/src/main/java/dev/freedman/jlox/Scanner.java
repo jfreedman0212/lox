@@ -20,7 +20,7 @@ public class Scanner {
         this.line = 1;
     }
 
-    public List<Token> scanTokens() {
+    public List<Token> scanTokens() throws ScannerException {
         while (!isAtEnd()) {
             start = current;
             final char c = advance();
@@ -142,6 +142,9 @@ public class Scanner {
             }
         }
         tokens.add(new Token.EndOfFile(line));
+        if (!errors.isEmpty()) {
+            throw new ScannerException(errors);
+        }
         return tokens;
     }
 

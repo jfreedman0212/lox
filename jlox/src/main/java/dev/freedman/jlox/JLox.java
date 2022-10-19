@@ -17,7 +17,13 @@ public class JLox {
         } else if (args.length == 1) {
             // read code from a file and run that file
             final byte[] bytes = Files.readAllBytes(Paths.get(args[0]));
-            run(new String(bytes, Charset.defaultCharset()));
+            try {
+                run(new String(bytes, Charset.defaultCharset()));
+            } catch (final ScannerException scannerException) {
+                reportError(scannerException.getErrors());
+                System.out.println("Exiting...");
+                System.exit(65); // EX_DATAERR
+            }
         } else {
             // otherwise, read-evaluate-print loop (REPL)
             // until the user ends stdin by ^D
@@ -29,14 +35,29 @@ public class JLox {
                 if (line == null) {
                     break;
                 }
-                run(line);
+                try {
+                    run(line);
+                } catch (final ScannerException scannerException) {
+                    reportError(scannerException.getErrors());
+                }
             }
         }
     }
 
-    private static void run(final String source) {
+    private static void run(final String source) throws ScannerException {
         final Scanner scanner = new Scanner(source);
         final List<Token> tokens = scanner.scanTokens();
-        System.out.printf("%s\n", tokens);
+        System.out.println(tokens);
+    }
+
+    private static void reportError(final List<ScannerError> errors) {
+        System.out.println("The following errors occurred:");
+        for (final ScannerError error : errors) {
+            if (error instanceof ScannerError.InvalidCharacter invalidCharacter) {
+                System.out.printf("Line %d: Invalid character %c\n", invalidCharacter.line(), invalidCharacter.c());
+            } else if (error instanceof ScannerError.UnterminatedString unterminatedString) {
+                System.out.printf("Line %d: Unterminated string %c\n", unterminatedString.line());
+            }
+        }
     }
 }
