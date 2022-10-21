@@ -19,9 +19,8 @@ public class JLox {
             final byte[] bytes = Files.readAllBytes(Paths.get(args[0]));
             try {
                 run(new String(bytes, Charset.defaultCharset()));
-            } catch (final ScannerException scannerException) {
-                reportError(scannerException.getErrors());
-                System.out.println("Exiting...");
+            } catch (final InterpreterException e) {
+                reportError(e.getErrors());
                 System.exit(65); // EX_DATAERR
             }
         } else {
@@ -33,31 +32,33 @@ public class JLox {
                 System.out.print("> ");
                 final String line = reader.readLine();
                 if (line == null) {
+                    System.out.println(); // print a new line before exiting
                     break;
                 }
                 try {
                     run(line);
-                } catch (final ScannerException scannerException) {
-                    reportError(scannerException.getErrors());
+                } catch (final InterpreterException e) {
+                    reportError(e.getErrors());
                 }
             }
         }
     }
 
-    private static void run(final String source) throws ScannerException {
+    private static void run(final String source) throws InterpreterException {
         final Scanner scanner = new Scanner(source);
         final List<Token> tokens = scanner.scanTokens();
-        System.out.println(tokens);
+        for (final Token token : tokens) {
+            System.out.println(token);
+        }
+        final Parser parser = new Parser(tokens);
+        final Expr expression = parser.parse();
+        System.out.printf("%s\n", expression);
     }
 
-    private static void reportError(final List<ScannerError> errors) {
+    private static void reportError(final List<InterpreterIssue> errors) {
         System.out.println("The following errors occurred:");
-        for (final ScannerError error : errors) {
-            if (error instanceof ScannerError.InvalidCharacter invalidCharacter) {
-                System.out.printf("Line %d: Invalid character %c\n", invalidCharacter.line(), invalidCharacter.c());
-            } else if (error instanceof ScannerError.UnterminatedString unterminatedString) {
-                System.out.printf("Line %d: Unterminated string %c\n", unterminatedString.line());
-            }
+        for (final InterpreterIssue error : errors) {
+            System.out.println(error);
         }
     }
 }

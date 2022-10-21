@@ -6,7 +6,7 @@ import java.util.List;
 public class Scanner {
     private final String source;
     private final List<Token> tokens;
-    private final List<ScannerError> errors;
+    private final List<InterpreterIssue> errors;
     private int start;
     private int current;
     private int line;
@@ -20,7 +20,7 @@ public class Scanner {
         this.line = 1;
     }
 
-    public List<Token> scanTokens() throws ScannerException {
+    public List<Token> scanTokens() throws InterpreterException {
         while (!isAtEnd()) {
             start = current;
             final char c = advance();
@@ -88,7 +88,7 @@ public class Scanner {
                         advance();
                     }
                     if (isAtEnd()) {
-                        errors.add(new ScannerError.UnterminatedString(line));
+                        errors.add(new InterpreterIssue.UnterminatedString(line));
                     } else {
                         advance();
                         final String literalValue = source.substring(start + 1, current - 1);
@@ -136,14 +136,14 @@ public class Scanner {
                         };
                         tokens.add(token);
                     } else {
-                        errors.add(new ScannerError.InvalidCharacter(c, line));
+                        errors.add(new InterpreterIssue.InvalidCharacter(c, line));
                     }
                 }
             }
         }
         tokens.add(new Token.EndOfFile(line));
         if (!errors.isEmpty()) {
-            throw new ScannerException(errors);
+            throw new InterpreterException(errors);
         }
         return tokens;
     }
