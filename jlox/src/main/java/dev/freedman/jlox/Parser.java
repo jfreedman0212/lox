@@ -1,5 +1,6 @@
 package dev.freedman.jlox;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Parser {
@@ -11,12 +12,43 @@ public class Parser {
         this.current = 0;
     }
 
-    public Expr parse() throws InterpreterException {
-        try {
-            return expression();
-        } catch (final InternalParserException e) {
-            throw new InterpreterException(e.issue);
+    public List<Stmt> parse() throws InterpreterException {
+        final List<Stmt> statements = new ArrayList<>();
+        while (!isAtEnd()) {
+            try {
+                statements.add(statement());
+            } catch (final InternalParserException e) {
+                throw new InterpreterException(e.issue);
+            }
         }
+        return statements;
+    }
+
+    private Stmt statement() {
+        final Token currentToken = tokens.get(current);
+        if (currentToken instanceof Token.Print printToken) {
+            advance();
+            final Expr valueToPrint = expression();
+            final Token nextToken = tokens.get(current);
+            if (nextToken instanceof Token.Semicolon semicolon) {
+                advance();
+                return new Stmt.Print(printToken, valueToPrint, semicolon);
+            }
+            throw new InternalParserException(
+                    new InterpreterIssue.UnterminatedStatement(currentToken.line(), printToken));
+        }
+        return expressionStatement();
+    }
+
+    private Stmt.Expression expressionStatement() {
+        final Token firstToken = tokens.get(current);
+        final Expr expression = expression();
+        final Token nextToken = tokens.get(current);
+        if (nextToken instanceof Token.Semicolon semicolon) {
+            advance();
+            return new Stmt.Expression(expression, semicolon);
+        }
+        throw new InternalParserException(new InterpreterIssue.UnterminatedStatement(firstToken.line(), firstToken));
     }
 
     private Expr expression() {

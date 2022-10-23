@@ -27,6 +27,9 @@ public sealed interface InterpreterIssue {
         }
     }
 
+    public record UnterminatedStatement(int line, Token startingToken) implements InterpreterIssue {
+    }
+
     public record UnexpectedToken(Token token) implements InterpreterIssue {
     }
 

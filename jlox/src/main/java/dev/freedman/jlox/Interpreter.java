@@ -1,12 +1,20 @@
 package dev.freedman.jlox;
 
 public class Interpreter {
-    public Object execute(final Expr expr) throws InterpreterException {
+    public void execute(final Stmt statement) throws InterpreterException {
+        if (statement instanceof Stmt.Print printStatement) {
+            System.out.printf("%s\n", this.executeExpression(printStatement.expression()));
+        } else if (statement instanceof Stmt.Expression expressionStatement) {
+            this.executeExpression(expressionStatement.expression());
+        }
+    }
+
+    public Object executeExpression(final Expr expr) throws InterpreterException {
         if (expr instanceof Expr.Unary unaryExpr) {
-            final Object right = execute(unaryExpr.right());
+            final Object right = executeExpression(unaryExpr.right());
             return unaryExpr.operator().evaluateUnaryOperation(right);
         } else if (expr instanceof Expr.Grouping groupingExpr) {
-            return execute(groupingExpr.expression());
+            return executeExpression(groupingExpr.expression());
         } else if (expr instanceof Expr.Literal literalExpr) {
             final Token.Literal literal = literalExpr.value();
             if (literal instanceof Token.Identifier) {
@@ -23,8 +31,8 @@ public class Interpreter {
                 return false;
             }
         } else if (expr instanceof Expr.Binary binaryExpr) {
-            final Object left = execute(binaryExpr.left());
-            final Object right = execute(binaryExpr.right());
+            final Object left = executeExpression(binaryExpr.left());
+            final Object right = executeExpression(binaryExpr.right());
             return binaryExpr.operator().evaluateBinaryOperation(left, right);
         }
         return null;

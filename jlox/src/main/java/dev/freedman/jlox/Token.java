@@ -8,6 +8,8 @@ public sealed interface Token {
     public sealed interface Literal extends Token {
     }
 
+    int line();
+
     public sealed interface BinaryOperator extends Token {
         Object evaluateBinaryOperation(Object left, Object right) throws InterpreterException;
     }
