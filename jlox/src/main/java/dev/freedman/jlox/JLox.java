@@ -36,7 +36,7 @@ public class JLox {
                     break;
                 }
                 try {
-                    run(line);
+                    System.out.printf("%s\n", run(line));
                 } catch (final InterpreterException e) {
                     reportError(e.getErrors());
                 }
@@ -44,15 +44,12 @@ public class JLox {
         }
     }
 
-    private static void run(final String source) throws InterpreterException {
+    private static Object run(final String source) throws InterpreterException {
         final Scanner scanner = new Scanner(source);
         final List<Token> tokens = scanner.scanTokens();
-        for (final Token token : tokens) {
-            System.out.println(token);
-        }
         final Parser parser = new Parser(tokens);
         final Expr expression = parser.parse();
-        System.out.printf("%s\n", expression);
+        return Interpreter.interpret(expression);
     }
 
     private static void reportError(final List<InterpreterIssue> errors) {
