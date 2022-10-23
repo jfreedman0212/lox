@@ -6,12 +6,12 @@ public sealed interface Token {
     public sealed interface Literal extends Token {
     }
 
-    public sealed interface BinaryOperator<Operand, Result> extends Token {
-        Result evaluateBinaryOperation(Operand left, Operand right);
+    public sealed interface BinaryOperator extends Token {
+        Object evaluateBinaryOperation(Object left, Object right);
     }
 
-    public sealed interface UnaryOperator<Operand, Result> extends Token {
-        Result evaluateUnaryOperation(Operand right);
+    public sealed interface UnaryOperator extends Token {
+        Object evaluateUnaryOperation(Object right);
     }
 
     // region Single-character tokens
@@ -34,19 +34,25 @@ public sealed interface Token {
     }
 
     public record Minus(char lexeme, int line)
-            implements BinaryOperator<Double, Double>, UnaryOperator<Double, Double> {
+            implements BinaryOperator, UnaryOperator {
         @Override
-        public Double evaluateBinaryOperation(Double left, Double right) {
-            return left - right;
+        public Object evaluateBinaryOperation(Object left, Object right) {
+            if (left instanceof Double leftDouble && right instanceof Double rightDouble) {
+                return leftDouble - rightDouble;
+            }
+            throw new RuntimeException("Minus (-) operator only supported on numbers.");
         }
 
         @Override
-        public Double evaluateUnaryOperation(Double right) {
-            return -right;
+        public Object evaluateUnaryOperation(Object right) {
+            if (right instanceof Double val) {
+                return -val;
+            }
+            throw new RuntimeException("Minus (-) operator only supported on numbers.");
         }
     }
 
-    public record Plus(char lexeme, int line) implements BinaryOperator<Object, Object> {
+    public record Plus(char lexeme, int line) implements BinaryOperator {
         @Override
         public Object evaluateBinaryOperation(Object left, Object right) {
             // handle valid cases (arithmetic addition and string concatenation)
@@ -67,30 +73,39 @@ public sealed interface Token {
     public record Semicolon(char lexeme, int line) implements Token {
     }
 
-    public record Slash(char lexeme, int line) implements BinaryOperator<Double, Double> {
+    public record Slash(char lexeme, int line) implements BinaryOperator {
         @Override
-        public Double evaluateBinaryOperation(Double left, Double right) {
-            return left / right;
+        public Object evaluateBinaryOperation(Object left, Object right) {
+            if (left instanceof Double leftDouble && right instanceof Double rightDouble) {
+                return leftDouble / rightDouble;
+            }
+            throw new RuntimeException("Division (/) operator only supported on numbers.");
         }
     }
 
-    public record Star(char lexeme, int line) implements BinaryOperator<Double, Double> {
+    public record Star(char lexeme, int line) implements BinaryOperator {
         @Override
-        public Double evaluateBinaryOperation(Double left, Double right) {
-            return left * right;
+        public Object evaluateBinaryOperation(Object left, Object right) {
+            if (left instanceof Double leftDouble && right instanceof Double rightDouble) {
+                return leftDouble * rightDouble;
+            }
+            throw new RuntimeException("Multiplication (*) operator only supported on numbers.");
         }
     }
     // endregion
 
     // region One or two character tokens
-    public record Bang(char lexeme, int line) implements UnaryOperator<Boolean, Boolean> {
+    public record Bang(char lexeme, int line) implements UnaryOperator {
         @Override
-        public Boolean evaluateUnaryOperation(Boolean right) {
-            return !right;
+        public Object evaluateUnaryOperation(Object right) {
+            if (right instanceof Boolean bool) {
+                return !bool;
+            }
+            throw new RuntimeException("Logical negation (!) operator only supported on booleans.");
         }
     }
 
-    public record BangEqual(String lexeme, int line) implements BinaryOperator<Object, Boolean> {
+    public record BangEqual(String lexeme, int line) implements BinaryOperator {
         @Override
         public Boolean evaluateBinaryOperation(Object left, Object right) {
             return !Objects.equals(left, right);
@@ -100,38 +115,50 @@ public sealed interface Token {
     public record Equal(char lexeme, int line) implements Token {
     }
 
-    public record EqualEqual(String lexeme, int line) implements BinaryOperator<Object, Boolean> {
+    public record EqualEqual(String lexeme, int line) implements BinaryOperator {
         @Override
         public Boolean evaluateBinaryOperation(Object left, Object right) {
             return Objects.equals(left, right);
         }
     }
 
-    public record Greater(char lexeme, int line) implements BinaryOperator<Double, Boolean> {
+    public record Greater(char lexeme, int line) implements BinaryOperator {
         @Override
-        public Boolean evaluateBinaryOperation(Double left, Double right) {
-            return left > right;
+        public Object evaluateBinaryOperation(Object left, Object right) {
+            if (left instanceof Double leftDouble && right instanceof Double rightDouble) {
+                return leftDouble > rightDouble;
+            }
+            throw new RuntimeException("Greater Than (>) operator only supported on numbers.");
         }
     }
 
-    public record GreaterEqual(String lexeme, int line) implements BinaryOperator<Double, Boolean> {
+    public record GreaterEqual(String lexeme, int line) implements BinaryOperator {
         @Override
-        public Boolean evaluateBinaryOperation(Double left, Double right) {
-            return left >= right;
+        public Object evaluateBinaryOperation(Object left, Object right) {
+            if (left instanceof Double leftDouble && right instanceof Double rightDouble) {
+                return leftDouble >= rightDouble;
+            }
+            throw new RuntimeException("Greater Than Or Equal To (>=) operator only supported on numbers.");
         }
     }
 
-    public record Less(char lexeme, int line) implements BinaryOperator<Double, Boolean> {
+    public record Less(char lexeme, int line) implements BinaryOperator {
         @Override
-        public Boolean evaluateBinaryOperation(Double left, Double right) {
-            return left < right;
+        public Object evaluateBinaryOperation(Object left, Object right) {
+            if (left instanceof Double leftDouble && right instanceof Double rightDouble) {
+                return leftDouble < rightDouble;
+            }
+            throw new RuntimeException("Less Than (>=) operator only supported on numbers.");
         }
     }
 
-    public record LessEqual(String lexeme, int line) implements BinaryOperator<Double, Boolean> {
+    public record LessEqual(String lexeme, int line) implements BinaryOperator {
         @Override
-        public Boolean evaluateBinaryOperation(Double left, Double right) {
-            return left <= right;
+        public Object evaluateBinaryOperation(Object left, Object right) {
+            if (left instanceof Double leftDouble && right instanceof Double rightDouble) {
+                return leftDouble <= rightDouble;
+            }
+            throw new RuntimeException("Less Than Or Equal To (>=) operator only supported on numbers.");
         }
     }
     // endregion

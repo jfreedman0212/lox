@@ -1,7 +1,7 @@
 package dev.freedman.jlox;
 
 public sealed interface Expr {
-    public record Binary<Operand, Result> (Expr left, Token.BinaryOperator<Operand, Result> operator, Expr right)
+    public record Binary(Expr left, Token.BinaryOperator operator, Expr right)
             implements Expr {
     }
 
@@ -11,6 +11,6 @@ public sealed interface Expr {
     public record Literal(Token.Literal value) implements Expr {
     }
 
-    public record Unary<Operand, Result> (Token.UnaryOperator<Operand, Result> operator, Expr right) implements Expr {
+    public record Unary(Token.UnaryOperator operator, Expr right) implements Expr {
     }
 }

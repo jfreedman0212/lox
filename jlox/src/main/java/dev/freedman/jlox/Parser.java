@@ -30,10 +30,10 @@ public class Parser {
             final Token currentToken = tokens.get(current);
             if (currentToken instanceof Token.BangEqual bangEqual) {
                 advance();
-                left = new Expr.Binary<>(left, bangEqual, comparison());
+                left = new Expr.Binary(left, bangEqual, comparison());
             } else if (currentToken instanceof Token.EqualEqual equalEqual) {
                 advance();
-                left = new Expr.Binary<>(left, equalEqual, comparison());
+                left = new Expr.Binary(left, equalEqual, comparison());
             } else {
                 break;
             }
@@ -47,16 +47,16 @@ public class Parser {
             final Token currentToken = tokens.get(current);
             if (currentToken instanceof Token.Less less) {
                 advance();
-                left = new Expr.Binary<>(left, less, term());
+                left = new Expr.Binary(left, less, term());
             } else if (currentToken instanceof Token.LessEqual lessEqual) {
                 advance();
-                left = new Expr.Binary<>(left, lessEqual, term());
+                left = new Expr.Binary(left, lessEqual, term());
             } else if (currentToken instanceof Token.Greater greater) {
                 advance();
-                left = new Expr.Binary<>(left, greater, term());
+                left = new Expr.Binary(left, greater, term());
             } else if (currentToken instanceof Token.GreaterEqual greaterEqual) {
                 advance();
-                left = new Expr.Binary<>(left, greaterEqual, term());
+                left = new Expr.Binary(left, greaterEqual, term());
             } else {
                 break;
             }
@@ -70,10 +70,10 @@ public class Parser {
             final Token currentToken = tokens.get(current);
             if (currentToken instanceof Token.Minus minus) {
                 advance();
-                left = new Expr.Binary<>(left, minus, factor());
+                left = new Expr.Binary(left, minus, factor());
             } else if (currentToken instanceof Token.Plus plus) {
                 advance();
-                left = new Expr.Binary<>(left, plus, factor());
+                left = new Expr.Binary(left, plus, factor());
             } else {
                 break;
             }
@@ -87,10 +87,10 @@ public class Parser {
             final Token currentToken = tokens.get(current);
             if (currentToken instanceof Token.Slash slash) {
                 advance();
-                left = new Expr.Binary<>(left, slash, unary());
+                left = new Expr.Binary(left, slash, unary());
             } else if (currentToken instanceof Token.Star star) {
                 advance();
-                left = new Expr.Binary<>(left, star, unary());
+                left = new Expr.Binary(left, star, unary());
             } else {
                 break;
             }
@@ -100,9 +100,9 @@ public class Parser {
 
     private Expr unary() {
         final Token currentToken = tokens.get(current);
-        if (currentToken instanceof Token.UnaryOperator<?, ?> unaryOperator) {
+        if (currentToken instanceof Token.UnaryOperator unaryOperator) {
             advance();
-            return new Expr.Unary<>(unaryOperator, unary());
+            return new Expr.Unary(unaryOperator, unary());
         } else {
             return primary();
         }
