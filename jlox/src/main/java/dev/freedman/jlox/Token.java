@@ -131,7 +131,7 @@ public sealed interface Token {
         public Object evaluateUnaryOperation(Object right) throws InterpreterException {
             final boolean booleanToNegate;
             if (Objects.isNull(right)) {
-                // null gets coalesced to false (i.e. null is "falsy")
+                // nil gets coalesced to false (i.e. nil is "falsy")
                 booleanToNegate = false;
             } else if (right instanceof Boolean bool) {
                 // booleans are treated as they are
@@ -168,11 +168,11 @@ public sealed interface Token {
                 return leftDouble > rightDouble;
             }
             throw new InterpreterException(
-                new InterpreterIssue.InvalidTypesForOperation(
-                        "Greater Than operator (>)",
-                        Collections.singletonList("numbers"),
-                        Arrays.asList(Objects.toString(left), Objects.toString(right)),
-                        line));
+                    new InterpreterIssue.InvalidTypesForOperation(
+                            "Greater Than operator (>)",
+                            Collections.singletonList("numbers"),
+                            Arrays.asList(Objects.toString(left), Objects.toString(right)),
+                            line));
         }
     }
 
@@ -183,11 +183,11 @@ public sealed interface Token {
                 return leftDouble >= rightDouble;
             }
             throw new InterpreterException(
-                new InterpreterIssue.InvalidTypesForOperation(
-                        "Greater Than Or Equal To operator (>=)",
-                        Collections.singletonList("numbers"),
-                        Arrays.asList(Objects.toString(left), Objects.toString(right)),
-                        line));
+                    new InterpreterIssue.InvalidTypesForOperation(
+                            "Greater Than Or Equal To operator (>=)",
+                            Collections.singletonList("numbers"),
+                            Arrays.asList(Objects.toString(left), Objects.toString(right)),
+                            line));
         }
     }
 
@@ -198,11 +198,11 @@ public sealed interface Token {
                 return leftDouble < rightDouble;
             }
             throw new InterpreterException(
-                new InterpreterIssue.InvalidTypesForOperation(
-                        "Less Than operator (<)",
-                        Collections.singletonList("numbers"),
-                        Arrays.asList(Objects.toString(left), Objects.toString(right)),
-                        line));
+                    new InterpreterIssue.InvalidTypesForOperation(
+                            "Less Than operator (<)",
+                            Collections.singletonList("numbers"),
+                            Arrays.asList(Objects.toString(left), Objects.toString(right)),
+                            line));
         }
     }
 
@@ -213,11 +213,11 @@ public sealed interface Token {
                 return leftDouble <= rightDouble;
             }
             throw new InterpreterException(
-                new InterpreterIssue.InvalidTypesForOperation(
-                        "Less Than Or Equal To operator (<=)",
-                        Collections.singletonList("numbers"),
-                        Arrays.asList(Objects.toString(left), Objects.toString(right)),
-                        line));
+                    new InterpreterIssue.InvalidTypesForOperation(
+                            "Less Than Or Equal To operator (<=)",
+                            Collections.singletonList("numbers"),
+                            Arrays.asList(Objects.toString(left), Objects.toString(right)),
+                            line));
         }
     }
     // endregion
