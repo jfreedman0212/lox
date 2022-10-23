@@ -1,12 +1,12 @@
 package dev.freedman.jlox;
 
 public class Interpreter {
-    public static Object interpret(final Expr expr) {
+    public Object execute(final Expr expr) {
         if (expr instanceof Expr.Unary unaryExpr) {
-            final Object right = interpret(unaryExpr.right());
+            final Object right = execute(unaryExpr.right());
             return unaryExpr.operator().evaluateUnaryOperation(right);
         } else if (expr instanceof Expr.Grouping groupingExpr) {
-            return interpret(groupingExpr.expression());
+            return execute(groupingExpr.expression());
         } else if (expr instanceof Expr.Literal literalExpr) {
             final Token.Literal literal = literalExpr.value();
             if (literal instanceof Token.Identifier) {
@@ -14,7 +14,7 @@ public class Interpreter {
             } else if (literal instanceof Token.Nil) {
                 return null;
             } else if (literal instanceof Token.Number number) {
-                return Double.valueOf(number.value());
+                return number.value();
             } else if (literal instanceof Token.StringLiteral string) {
                 return string.value();
             } else if (literal instanceof Token.True) {
@@ -23,10 +23,9 @@ public class Interpreter {
                 return false;
             }
         } else if (expr instanceof Expr.Binary binaryExpr) {
-            final Object left = interpret(binaryExpr.left());
-            final Object right = interpret(binaryExpr.right());
-            final Token.BinaryOperator operator = binaryExpr.operator();
-            return operator.evaluateBinaryOperation(left, right);
+            final Object left = execute(binaryExpr.left());
+            final Object right = execute(binaryExpr.right());
+            return binaryExpr.operator().evaluateBinaryOperation(left, right);
         }
         return null;
     }

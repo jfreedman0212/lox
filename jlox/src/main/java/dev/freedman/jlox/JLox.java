@@ -49,7 +49,8 @@ public class JLox {
         final List<Token> tokens = scanner.scanTokens();
         final Parser parser = new Parser(tokens);
         final Expr expression = parser.parse();
-        return Interpreter.interpret(expression);
+        final Interpreter interpreter = new Interpreter();
+        return interpreter.execute(expression);
     }
 
     private static void reportError(final List<InterpreterIssue> errors) {

@@ -148,7 +148,7 @@ public sealed interface Token {
             if (left instanceof Double leftDouble && right instanceof Double rightDouble) {
                 return leftDouble < rightDouble;
             }
-            throw new RuntimeException("Less Than (>=) operator only supported on numbers.");
+            throw new RuntimeException("Less Than (<) operator only supported on numbers.");
         }
     }
 
@@ -158,7 +158,7 @@ public sealed interface Token {
             if (left instanceof Double leftDouble && right instanceof Double rightDouble) {
                 return leftDouble <= rightDouble;
             }
-            throw new RuntimeException("Less Than Or Equal To (>=) operator only supported on numbers.");
+            throw new RuntimeException("Less Than Or Equal To (<=) operator only supported on numbers.");
         }
     }
     // endregion
