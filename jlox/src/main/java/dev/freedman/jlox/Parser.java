@@ -1,6 +1,5 @@
 package dev.freedman.jlox;
 
-import java.util.Collections;
 import java.util.List;
 
 public class Parser {
@@ -16,7 +15,7 @@ public class Parser {
         try {
             return expression();
         } catch (final InternalParserException e) {
-            throw new InterpreterException(Collections.singletonList(e.issue));
+            throw new InterpreterException(e.issue);
         }
     }
 

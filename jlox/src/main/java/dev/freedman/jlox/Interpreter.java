@@ -1,7 +1,7 @@
 package dev.freedman.jlox;
 
 public class Interpreter {
-    public Object execute(final Expr expr) {
+    public Object execute(final Expr expr) throws InterpreterException {
         if (expr instanceof Expr.Unary unaryExpr) {
             final Object right = execute(unaryExpr.right());
             return unaryExpr.operator().evaluateUnaryOperation(right);
