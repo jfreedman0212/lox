@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class Interpreter {
-    private final Map<String, Optional<Object>> variables;
+    private final Map<String, Object> variables;
 
     public Interpreter() {
         this.variables = new HashMap<>();
@@ -19,16 +19,16 @@ public class Interpreter {
             this.executeExpression(expressionStatement.expression());
         } else if (statement instanceof Stmt.VariableDeclaration variableDeclaration) {
             final String variableName = variableDeclaration.identifier().lexeme();
-            if (variables.get(variableName) != null) {
+            if (variables.containsKey(variableName)) {
                 throw new InterpreterException(new InterpreterIssue.VariableAlreadyDefined(variableName,
                         variableDeclaration.identifier().line()));
             }
             final Expr expression = variableDeclaration.expression();
             if (Objects.nonNull(expression)) {
                 final Object result = this.executeExpression(expression);
-                variables.put(variableName, Optional.of(result));
+                variables.put(variableName, result);
             } else {
-                variables.put(variableName, Optional.empty());
+                variables.put(variableName, null);
             }
         }
     }
@@ -42,14 +42,11 @@ public class Interpreter {
         } else if (expr instanceof Expr.Literal literalExpr) {
             final Token.Literal literal = literalExpr.value();
             if (literal instanceof Token.Identifier identifier) {
-                final Optional<Object> value = variables.get(identifier.lexeme());
-                if (value == null) {
+                if (!variables.containsKey(identifier.lexeme())) {
                     throw new InterpreterException(
                             new InterpreterIssue.VariableNotDefined(identifier.lexeme(), identifier.line()));
                 }
-                // a filled Optional represents a non Nil value,
-                // but an empty one represents Nil
-                return value.orElse(null);
+                return variables.get(identifier.lexeme());
             } else if (literal instanceof Token.Nil) {
                 return null;
             } else if (literal instanceof Token.Number number) {
