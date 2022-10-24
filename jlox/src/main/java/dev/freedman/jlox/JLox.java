@@ -18,7 +18,11 @@ public class JLox {
             // read code from a file and run that file
             final byte[] bytes = Files.readAllBytes(Paths.get(args[0]));
             try {
-                run(new String(bytes, Charset.defaultCharset()));
+                final List<Stmt> statements = getExecutableStatements(new String(bytes, Charset.defaultCharset()));
+                final Interpreter interpreter = new Interpreter();
+                for (final Stmt statement : statements) {
+                    interpreter.execute(statement);
+                }
             } catch (final InterpreterException e) {
                 reportError(e.getErrors());
                 System.exit(65); // EX_DATAERR
@@ -28,6 +32,11 @@ public class JLox {
             // until the user ends stdin by ^D
             final InputStreamReader input = new InputStreamReader(System.in);
             final BufferedReader reader = new BufferedReader(input);
+            // use the same interpreter (with same internal state) for each
+            // line that gets read by the REPL. This way, variables are maintained
+            // across each line. this goes against the Lox spec, but I like this more,
+            // so god dammit I'm going to do it
+            final Interpreter interpreter = new Interpreter();
             while (true) {
                 System.out.print("> ");
                 final String line = reader.readLine();
@@ -36,7 +45,10 @@ public class JLox {
                     break;
                 }
                 try {
-                    System.out.printf("%s\n", run(line));
+                    final List<Stmt> statements = getExecutableStatements(line);
+                    for (final Stmt statement : statements) {
+                        interpreter.execute(statement);
+                    }
                 } catch (final InterpreterException e) {
                     reportError(e.getErrors());
                 }
@@ -44,16 +56,11 @@ public class JLox {
         }
     }
 
-    private static Object run(final String source) throws InterpreterException {
+    private static List<Stmt> getExecutableStatements(final String source) throws InterpreterException {
         final Scanner scanner = new Scanner(source);
         final List<Token> tokens = scanner.scanTokens();
         final Parser parser = new Parser(tokens);
-        final List<Stmt> statements = parser.parse();
-        final Interpreter interpreter = new Interpreter();
-        for (final Stmt statement : statements) {
-            interpreter.execute(statement);
-        }
-        return null;
+        return parser.parse();
     }
 
     private static void reportError(final List<InterpreterIssue> errors) {
