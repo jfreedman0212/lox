@@ -1,8 +1,6 @@
 package dev.freedman.jlox;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 public sealed interface InterpreterIssue {
     public record InvalidCharacter(char c, int line) implements InterpreterIssue {
