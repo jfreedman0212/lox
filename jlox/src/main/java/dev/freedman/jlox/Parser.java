@@ -16,12 +16,42 @@ public class Parser {
         final List<Stmt> statements = new ArrayList<>();
         while (!isAtEnd()) {
             try {
-                statements.add(statement());
+                statements.add(declaration());
             } catch (final InternalParserException e) {
                 throw new InterpreterException(e.issue);
             }
         }
         return statements;
+    }
+
+    private Stmt declaration() {
+        final Token currentToken = tokens.get(current);
+        if (currentToken instanceof Token.Var) {
+            advance();
+            return variableDeclaration();
+        }
+        return statement();
+    }
+
+    private Stmt variableDeclaration() {
+        Token currentToken = tokens.get(current);
+        if (currentToken instanceof Token.Identifier identifier) {
+            advance();
+            currentToken = tokens.get(current);
+            if (currentToken instanceof Token.Equal) {
+                advance();
+                // from the grammar's standpoint, this doesn't make much sense.
+                // I mostly call `expressionStatement` as a convenience to not
+                // have to manually check for a terminating semicolon again
+                final Stmt.Expression expressionStmt = expressionStatement();
+                return new Stmt.VariableDeclaration(identifier, expressionStmt.expression());
+            } else if (currentToken instanceof Token.Semicolon) {
+                advance();
+                return new Stmt.VariableDeclaration(identifier, null);
+            }
+            throw new InternalParserException(new InterpreterIssue.UnexpectedToken(currentToken));
+        }
+        throw new InternalParserException(new InterpreterIssue.UnexpectedToken(currentToken));
     }
 
     private Stmt statement() {
@@ -30,9 +60,9 @@ public class Parser {
             advance();
             final Expr valueToPrint = expression();
             final Token nextToken = tokens.get(current);
-            if (nextToken instanceof Token.Semicolon semicolon) {
+            if (nextToken instanceof Token.Semicolon) {
                 advance();
-                return new Stmt.Print(printToken, valueToPrint, semicolon);
+                return new Stmt.Print(valueToPrint);
             }
             throw new InternalParserException(
                     new InterpreterIssue.UnterminatedStatement(currentToken.line(), printToken));
@@ -44,9 +74,9 @@ public class Parser {
         final Token firstToken = tokens.get(current);
         final Expr expression = expression();
         final Token nextToken = tokens.get(current);
-        if (nextToken instanceof Token.Semicolon semicolon) {
+        if (nextToken instanceof Token.Semicolon) {
             advance();
-            return new Stmt.Expression(expression, semicolon);
+            return new Stmt.Expression(expression);
         }
         throw new InternalParserException(new InterpreterIssue.UnterminatedStatement(firstToken.line(), firstToken));
     }

@@ -2,3 +2,7 @@ print "hello, world!";
 print 10 + 20 - 30;
 print !(10 > 20);
 10 > 20;
+var x = 10 + 20 - 30;
+var y;
+print x;
+print y;

@@ -22,6 +22,12 @@ public sealed interface InterpreterIssue {
             int line) implements InterpreterIssue {
     }
 
-    public record FeatureNotSupportedYet(String featureName, int line) {
+    public record FeatureNotSupportedYet(String featureName, int line) implements InterpreterIssue {
+    }
+
+    public record VariableAlreadyDefined(String variableName, int line) implements InterpreterIssue {
+    }
+
+    public record VariableNotDefined(String variableName, int line) implements InterpreterIssue {
     }
 }
