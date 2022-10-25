@@ -94,6 +94,7 @@ public class Parser {
             if (expression instanceof Expr.Variable variableDeclaration) {
                 return new Expr.Assignment(variableDeclaration.identifier(), value);
             }
+            // TODO: this isn't supposed to throw an exception, just track it for later
             throw new InternalParserException(new InterpreterIssue.InvalidAssignmentTarget(equals));
         }
         return expression;
