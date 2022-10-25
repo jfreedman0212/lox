@@ -18,6 +18,7 @@ public class Parser {
             try {
                 statements.add(declaration());
             } catch (final InternalParserException e) {
+                // TODO: collect as many errors as possible before throwing
                 throw new InterpreterException(e.issue);
             }
         }
