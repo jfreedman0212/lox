@@ -1,14 +1,12 @@
 package dev.freedman.jlox;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 public class Interpreter {
-    private final Map<String, Object> variables;
+    private final Environment environment;
 
     public Interpreter() {
-        this.variables = new HashMap<>();
+        this.environment = new Environment();
     }
 
     public void execute(final Stmt statement) throws InterpreterException {
@@ -17,18 +15,9 @@ public class Interpreter {
         } else if (statement instanceof Stmt.Expression expressionStatement) {
             this.executeExpression(expressionStatement.expression());
         } else if (statement instanceof Stmt.VariableDeclaration variableDeclaration) {
-            final String variableName = variableDeclaration.identifier().lexeme();
-            if (variables.containsKey(variableName)) {
-                throw new InterpreterException(new InterpreterIssue.VariableAlreadyDefined(variableName,
-                        variableDeclaration.identifier().line()));
-            }
             final Expr expression = variableDeclaration.expression();
-            if (Objects.nonNull(expression)) {
-                final Object result = this.executeExpression(expression);
-                variables.put(variableName, result);
-            } else {
-                variables.put(variableName, null);
-            }
+            final Object resolvedValue = Objects.nonNull(expression) ? this.executeExpression(expression) : null;
+            environment.declare(variableDeclaration.identifier(), resolvedValue);
         }
     }
 
@@ -41,11 +30,7 @@ public class Interpreter {
         } else if (expr instanceof Expr.Literal literalExpr) {
             final Token.Literal literal = literalExpr.value();
             if (literal instanceof Token.Identifier identifier) {
-                if (!variables.containsKey(identifier.lexeme())) {
-                    throw new InterpreterException(
-                            new InterpreterIssue.VariableNotDefined(identifier.lexeme(), identifier.line()));
-                }
-                return variables.get(identifier.lexeme());
+                return environment.retrieve(identifier);
             } else if (literal instanceof Token.Nil) {
                 return null;
             } else if (literal instanceof Token.Number number) {
