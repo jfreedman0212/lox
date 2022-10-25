@@ -29,9 +29,7 @@ public class Interpreter {
             return executeExpression(groupingExpr.expression());
         } else if (expr instanceof Expr.Literal literalExpr) {
             final Token.Literal literal = literalExpr.value();
-            if (literal instanceof Token.Identifier identifier) {
-                return environment.retrieve(identifier);
-            } else if (literal instanceof Token.Nil) {
+            if (literal instanceof Token.Nil) {
                 return null;
             } else if (literal instanceof Token.Number number) {
                 return number.value();
@@ -46,6 +44,13 @@ public class Interpreter {
             final Object left = executeExpression(binaryExpr.left());
             final Object right = executeExpression(binaryExpr.right());
             return binaryExpr.operator().evaluateBinaryOperation(left, right);
+        } else if (expr instanceof Expr.Variable variable) {
+            return environment.retrieve(variable.identifier());
+        } else if (expr instanceof Expr.Assignment assignment) {
+            final Token.Identifier identifier = assignment.identifier();
+            final Object result = this.executeExpression(assignment.assignee());
+            environment.assign(identifier, result);
+            return result;
         }
         return null;
     }

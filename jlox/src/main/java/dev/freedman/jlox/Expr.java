@@ -13,4 +13,10 @@ public sealed interface Expr {
 
     public record Unary(Token.UnaryOperator operator, Expr right) implements Expr {
     }
+
+    public record Variable(Token.Identifier identifier) implements Expr {
+    }
+
+    public record Assignment(Token.Identifier identifier, Expr assignee) implements Expr {
+    }
 }

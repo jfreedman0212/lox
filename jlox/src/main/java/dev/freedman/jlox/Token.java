@@ -225,7 +225,7 @@ public sealed interface Token {
     // endregion
 
     // region Literals
-    public record Identifier(String lexeme, int line) implements Literal {
+    public record Identifier(String lexeme, int line) implements Token {
     }
 
     public record StringLiteral(String lexeme, int line, String value) implements Literal {

@@ -82,7 +82,21 @@ public class Parser {
     }
 
     private Expr expression() {
-        return equality();
+        return assignment();
+    }
+
+    private Expr assignment() {
+        final Expr expression = equality();
+        final Token currentToken = tokens.get(current);
+        if (currentToken instanceof Token.Equal equals) {
+            advance();
+            final Expr value = assignment();
+            if (expression instanceof Expr.Variable variableDeclaration) {
+                return new Expr.Assignment(variableDeclaration.identifier(), value);
+            }
+            throw new InternalParserException(new InterpreterIssue.InvalidAssignmentTarget(equals));
+        }
+        return expression;
     }
 
     private Expr equality() {
@@ -174,6 +188,10 @@ public class Parser {
         if (currentToken instanceof Token.Literal literal) {
             advance();
             return new Expr.Literal(literal);
+        }
+        if (currentToken instanceof Token.Identifier identifier) {
+            advance();
+            return new Expr.Variable(identifier);
         }
         if (currentToken instanceof Token.LeftParenthesis leftParenthesis) {
             advance();

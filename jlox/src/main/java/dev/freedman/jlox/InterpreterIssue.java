@@ -30,4 +30,7 @@ public sealed interface InterpreterIssue {
 
     public record VariableNotDefined(String variableName, int line) implements InterpreterIssue {
     }
+
+    public record InvalidAssignmentTarget(Token invalidAssignmentTarget) implements InterpreterIssue {
+    }
 }
