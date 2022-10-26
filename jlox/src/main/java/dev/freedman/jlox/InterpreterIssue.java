@@ -9,7 +9,7 @@ public sealed interface InterpreterIssue {
     public record UnterminatedString(int line) implements InterpreterIssue {
     }
 
-    public record UnterminatedGrouping(Token.LeftParenthesis startingToken) implements InterpreterIssue {
+    public record UnterminatedGrouping(Token startingToken) implements InterpreterIssue {
     }
 
     public record UnterminatedStatement(int line, Token startingToken) implements InterpreterIssue {

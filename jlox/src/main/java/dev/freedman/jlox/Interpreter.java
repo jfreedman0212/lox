@@ -3,7 +3,7 @@ package dev.freedman.jlox;
 import java.util.Objects;
 
 public class Interpreter {
-    private final Environment environment;
+    private Environment environment;
 
     public Interpreter() {
         this.environment = new Environment();
@@ -18,6 +18,16 @@ public class Interpreter {
             final Expr expression = variableDeclaration.expression();
             final Object resolvedValue = Objects.nonNull(expression) ? this.executeExpression(expression) : null;
             environment.declare(variableDeclaration.identifier(), resolvedValue);
+        } else if (statement instanceof Stmt.Block block) {
+            final Environment outerEnvironment = this.environment;
+            try {
+                this.environment = new Environment(outerEnvironment);
+                for (final Stmt nestedStatement : block.statements()) {
+                    this.execute(nestedStatement);
+                }
+            } finally {
+                this.environment = outerEnvironment;
+            }
         }
     }
 

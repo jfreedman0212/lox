@@ -18,6 +18,7 @@ public class Parser {
             try {
                 statements.add(declaration());
             } catch (final InternalParserException e) {
+                e.printStackTrace();
                 // TODO: collect as many errors as possible before throwing
                 throw new InterpreterException(e.issue);
             }
@@ -67,8 +68,26 @@ public class Parser {
             }
             throw new InternalParserException(
                     new InterpreterIssue.UnterminatedStatement(currentToken.line(), printToken));
+        } else if (currentToken instanceof Token.LeftBrace starter) {
+            advance();
+            return new Stmt.Block(block(starter));
         }
         return expressionStatement();
+    }
+
+    private List<Stmt> block(Token.LeftBrace starter) {
+        final List<Stmt> innerStatements = new ArrayList<>();
+        Token currentToken = tokens.get(current);
+        while (!(currentToken instanceof Token.RightBrace) && !isAtEnd()) {
+            innerStatements.add(declaration());
+            currentToken = tokens.get(current);
+        }
+        final Token endingToken = tokens.get(current);
+        if (endingToken instanceof Token.RightBrace) {
+            advance(); // consume the right brace
+            return innerStatements;
+        }
+        throw new InternalParserException(new InterpreterIssue.UnterminatedGrouping(starter));
     }
 
     private Stmt.Expression expressionStatement() {
