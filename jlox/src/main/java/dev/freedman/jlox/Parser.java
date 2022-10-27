@@ -15,11 +15,13 @@ import java.util.List;
  */
 public class Parser {
     private final List<Token> tokens;
+    private final List<InterpreterIssue> issues;
     private int current;
 
     public Parser(final List<Token> tokens) {
         this.tokens = tokens;
         this.current = 0;
+        this.issues = new ArrayList<>();
     }
 
     public List<Statement> parse() throws InterpreterException {
@@ -28,10 +30,17 @@ public class Parser {
             try {
                 statements.add(declaration());
             } catch (final InternalParserException e) {
-                e.printStackTrace();
-                // TODO: collect as many errors as possible before throwing
-                throw new InterpreterException(e.issue);
+                // track the issue
+                issues.add(e.issue);
+                // find the next "statement boundary" to keep going from.
+                // this way, we report as many errors to the user as we possibly
+                // can. this provides a better user experience than fixing errors
+                // one at a time
+                synchronize();
             }
+        }
+        if (!issues.isEmpty()) {
+            throw new InterpreterException(issues);
         }
         return statements;
     }
@@ -151,7 +160,6 @@ public class Parser {
             if (expression instanceof Expression.Variable variableDeclaration) {
                 return new Expression.Assignment(variableDeclaration.identifier(), value);
             }
-            // TODO: this isn't supposed to throw an exception, just track it for later
             throw new InternalParserException(new InterpreterIssue.InvalidAssignmentTarget(equals));
         }
         return expression;
@@ -273,6 +281,24 @@ public class Parser {
 
     private boolean isAtEnd() {
         return tokens.get(current) instanceof Token.EndOfFile;
+    }
+
+    private void synchronize() {
+        advance();
+        while (!isAtEnd()) {
+            final Token previousToken = tokens.get(current - 1);
+            if (previousToken instanceof Token.Semicolon) {
+                return;
+            }
+            final Token currentToken = tokens.get(current);
+            if (currentToken instanceof Token.Class || currentToken instanceof Token.For
+                    || currentToken instanceof Token.Fun || currentToken instanceof Token.If
+                    || currentToken instanceof Token.Print || currentToken instanceof Token.Return
+                    || currentToken instanceof Token.Var || currentToken instanceof Token.While) {
+                return;
+            }
+            advance();
+        }
     }
 
     private static final class InternalParserException extends RuntimeException {
