@@ -2,6 +2,12 @@ package dev.freedman.jlox;
 
 import java.util.Objects;
 
+/**
+ * Last step of the interpreter, the thing that actually runs the source code!
+ * Unlike the other phases that take in a list of things, this phase only takes
+ * in a single statement at a time. This allows it to be used for both running
+ * a full file and for the REPL.
+ */
 public class Interpreter {
     private Environment environment;
 
@@ -9,26 +15,26 @@ public class Interpreter {
         this.environment = new Environment();
     }
 
-    public void execute(final Stmt statement) throws InterpreterException {
-        if (statement instanceof Stmt.Print printStatement) {
+    public void execute(final Statement statement) throws InterpreterException {
+        if (statement instanceof Statement.Print printStatement) {
             System.out.printf("%s\n", this.executeExpression(printStatement.expression()));
-        } else if (statement instanceof Stmt.Expression expressionStatement) {
+        } else if (statement instanceof Statement.ExpressionStatement expressionStatement) {
             this.executeExpression(expressionStatement.expression());
-        } else if (statement instanceof Stmt.VariableDeclaration variableDeclaration) {
-            final Expr expression = variableDeclaration.expression();
+        } else if (statement instanceof Statement.VariableDeclaration variableDeclaration) {
+            final Expression expression = variableDeclaration.expression();
             final Object resolvedValue = Objects.nonNull(expression) ? this.executeExpression(expression) : null;
             environment.declare(variableDeclaration.identifier(), resolvedValue);
-        } else if (statement instanceof Stmt.Block block) {
+        } else if (statement instanceof Statement.Block block) {
             final Environment outerEnvironment = this.environment;
             try {
                 this.environment = new Environment(outerEnvironment);
-                for (final Stmt nestedStatement : block.statements()) {
+                for (final Statement nestedStatement : block.statements()) {
                     this.execute(nestedStatement);
                 }
             } finally {
                 this.environment = outerEnvironment;
             }
-        } else if (statement instanceof Stmt.If ifStatement) {
+        } else if (statement instanceof Statement.If ifStatement) {
             final boolean condition = Token.isTruthy(executeExpression(ifStatement.condition()));
             if (condition) {
                 execute(ifStatement.thenBranch());
@@ -38,13 +44,13 @@ public class Interpreter {
         }
     }
 
-    public Object executeExpression(final Expr expr) throws InterpreterException {
-        if (expr instanceof Expr.Unary unaryExpr) {
+    public Object executeExpression(final Expression expr) throws InterpreterException {
+        if (expr instanceof Expression.Unary unaryExpr) {
             final Object right = executeExpression(unaryExpr.right());
             return unaryExpr.operator().evaluateUnaryOperation(right);
-        } else if (expr instanceof Expr.Grouping groupingExpr) {
+        } else if (expr instanceof Expression.Grouping groupingExpr) {
             return executeExpression(groupingExpr.expression());
-        } else if (expr instanceof Expr.Literal literalExpr) {
+        } else if (expr instanceof Expression.Literal literalExpr) {
             final Token.Literal literal = literalExpr.value();
             if (literal instanceof Token.Nil) {
                 return null;
@@ -57,13 +63,13 @@ public class Interpreter {
             } else if (literal instanceof Token.False) {
                 return false;
             }
-        } else if (expr instanceof Expr.Binary binaryExpr) {
+        } else if (expr instanceof Expression.Binary binaryExpr) {
             final Object left = executeExpression(binaryExpr.left());
             final Object right = executeExpression(binaryExpr.right());
             return binaryExpr.operator().evaluateBinaryOperation(left, right);
-        } else if (expr instanceof Expr.Variable variable) {
+        } else if (expr instanceof Expression.Variable variable) {
             return environment.retrieve(variable.identifier());
-        } else if (expr instanceof Expr.Assignment assignment) {
+        } else if (expr instanceof Expression.Assignment assignment) {
             final Token.Identifier identifier = assignment.identifier();
             final Object result = this.executeExpression(assignment.assignee());
             environment.assign(identifier, result);

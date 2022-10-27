@@ -8,6 +8,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
+/**
+ * This is the entrypoint for the interpreter and the main executable that
+ * brings all the pieces together.
+ */
 public class JLox {
     public static void main(final String[] args) throws IOException {
         if (args.length > 1) {
@@ -18,9 +22,9 @@ public class JLox {
             // read code from a file and run that file
             final byte[] bytes = Files.readAllBytes(Paths.get(args[0]));
             try {
-                final List<Stmt> statements = getExecutableStatements(new String(bytes, Charset.defaultCharset()));
+                final List<Statement> statements = getExecutableStatements(new String(bytes, Charset.defaultCharset()));
                 final Interpreter interpreter = new Interpreter();
-                for (final Stmt statement : statements) {
+                for (final Statement statement : statements) {
                     interpreter.execute(statement);
                 }
             } catch (final InterpreterException e) {
@@ -41,12 +45,14 @@ public class JLox {
                 System.out.print("> ");
                 final String line = reader.readLine();
                 if (line == null) {
-                    System.out.println(); // print a new line before exiting
+                    // print a new line before exiting so my Maven output
+                    // doesn't look ugly
+                    System.out.println();
                     break;
                 }
                 try {
-                    final List<Stmt> statements = getExecutableStatements(line);
-                    for (final Stmt statement : statements) {
+                    final List<Statement> statements = getExecutableStatements(line);
+                    for (final Statement statement : statements) {
                         interpreter.execute(statement);
                     }
                 } catch (final InterpreterException e) {
@@ -56,7 +62,7 @@ public class JLox {
         }
     }
 
-    private static List<Stmt> getExecutableStatements(final String source) throws InterpreterException {
+    private static List<Statement> getExecutableStatements(final String source) throws InterpreterException {
         final Scanner scanner = new Scanner(source);
         final List<Token> tokens = scanner.scanTokens();
         final Parser parser = new Parser(tokens);

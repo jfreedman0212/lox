@@ -3,6 +3,16 @@ package dev.freedman.jlox;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Takes a list of tokens and produces a list of statements. This represents
+ * the second phase in the interpreter.
+ * <p>
+ * Most functions in this class represent productions in the grammar and are
+ * direct translations of them in code-form. Not all of the productions are
+ * explicitly
+ * created as functions though, I may have inlined some of them.
+ * </p>
+ */
 public class Parser {
     private final List<Token> tokens;
     private int current;
@@ -12,8 +22,8 @@ public class Parser {
         this.current = 0;
     }
 
-    public List<Stmt> parse() throws InterpreterException {
-        final List<Stmt> statements = new ArrayList<>();
+    public List<Statement> parse() throws InterpreterException {
+        final List<Statement> statements = new ArrayList<>();
         while (!isAtEnd()) {
             try {
                 statements.add(declaration());
@@ -26,7 +36,7 @@ public class Parser {
         return statements;
     }
 
-    private Stmt declaration() {
+    private Statement declaration() {
         final Token currentToken = tokens.get(current);
         if (currentToken instanceof Token.Var) {
             advance();
@@ -35,7 +45,7 @@ public class Parser {
         return statement();
     }
 
-    private Stmt variableDeclaration() {
+    private Statement variableDeclaration() {
         Token currentToken = tokens.get(current);
         if (currentToken instanceof Token.Identifier identifier) {
             advance();
@@ -45,32 +55,32 @@ public class Parser {
                 // from the grammar's standpoint, this doesn't make much sense.
                 // I mostly call `expressionStatement` as a convenience to not
                 // have to manually check for a terminating semicolon again
-                final Stmt.Expression expressionStmt = expressionStatement();
-                return new Stmt.VariableDeclaration(identifier, expressionStmt.expression());
+                final Statement.ExpressionStatement expressionStmt = expressionStatement();
+                return new Statement.VariableDeclaration(identifier, expressionStmt.expression());
             } else if (currentToken instanceof Token.Semicolon) {
                 advance();
-                return new Stmt.VariableDeclaration(identifier, null);
+                return new Statement.VariableDeclaration(identifier, null);
             }
             throw new InternalParserException(new InterpreterIssue.UnexpectedToken(currentToken));
         }
         throw new InternalParserException(new InterpreterIssue.UnexpectedToken(currentToken));
     }
 
-    private Stmt statement() {
+    private Statement statement() {
         final Token currentToken = tokens.get(current);
         if (currentToken instanceof Token.Print printToken) {
             advance();
-            final Expr valueToPrint = expression();
+            final Expression valueToPrint = expression();
             final Token nextToken = tokens.get(current);
             if (nextToken instanceof Token.Semicolon) {
                 advance();
-                return new Stmt.Print(valueToPrint);
+                return new Statement.Print(valueToPrint);
             }
             throw new InternalParserException(
                     new InterpreterIssue.UnterminatedStatement(currentToken.line(), printToken));
         } else if (currentToken instanceof Token.LeftBrace starter) {
             advance();
-            return new Stmt.Block(block(starter));
+            return new Statement.Block(block(starter));
         } else if (currentToken instanceof Token.If) {
             advance();
             return ifStatement();
@@ -78,32 +88,32 @@ public class Parser {
         return expressionStatement();
     }
 
-    private Stmt.If ifStatement() {
+    private Statement.If ifStatement() {
         final Token potentialOpeningParen = tokens.get(current);
         if (!(potentialOpeningParen instanceof Token.LeftParenthesis)) {
             throw new InternalParserException(new InterpreterIssue.UnexpectedToken(potentialOpeningParen));
         }
         advance();
-        final Expr condition = expression();
+        final Expression condition = expression();
         final Token potentialClosingParen = tokens.get(current);
         if (!(potentialClosingParen instanceof Token.RightParenthesis)) {
             throw new InternalParserException(new InterpreterIssue.UnterminatedGrouping(potentialOpeningParen));
         }
         advance();
-        final Stmt thenBranch = statement();
+        final Statement thenBranch = statement();
         final Token potentialElse = tokens.get(current);
-        final Stmt elseBranch;
+        final Statement elseBranch;
         if (potentialElse instanceof Token.Else elseToken) {
             advance();
             elseBranch = statement();
         } else {
             elseBranch = null;
         }
-        return new Stmt.If(condition, thenBranch, elseBranch);
+        return new Statement.If(condition, thenBranch, elseBranch);
     }
 
-    private List<Stmt> block(Token.LeftBrace starter) {
-        final List<Stmt> innerStatements = new ArrayList<>();
+    private List<Statement> block(Token.LeftBrace starter) {
+        final List<Statement> innerStatements = new ArrayList<>();
         Token currentToken = tokens.get(current);
         while (!(currentToken instanceof Token.RightBrace) && !isAtEnd()) {
             innerStatements.add(declaration());
@@ -117,29 +127,29 @@ public class Parser {
         throw new InternalParserException(new InterpreterIssue.UnterminatedGrouping(starter));
     }
 
-    private Stmt.Expression expressionStatement() {
+    private Statement.ExpressionStatement expressionStatement() {
         final Token firstToken = tokens.get(current);
-        final Expr expression = expression();
+        final Expression expression = expression();
         final Token nextToken = tokens.get(current);
         if (nextToken instanceof Token.Semicolon) {
             advance();
-            return new Stmt.Expression(expression);
+            return new Statement.ExpressionStatement(expression);
         }
         throw new InternalParserException(new InterpreterIssue.UnterminatedStatement(firstToken.line(), firstToken));
     }
 
-    private Expr expression() {
+    private Expression expression() {
         return assignment();
     }
 
-    private Expr assignment() {
-        final Expr expression = equality();
+    private Expression assignment() {
+        final Expression expression = equality();
         final Token currentToken = tokens.get(current);
         if (currentToken instanceof Token.Equal equals) {
             advance();
-            final Expr value = assignment();
-            if (expression instanceof Expr.Variable variableDeclaration) {
-                return new Expr.Assignment(variableDeclaration.identifier(), value);
+            final Expression value = assignment();
+            if (expression instanceof Expression.Variable variableDeclaration) {
+                return new Expression.Assignment(variableDeclaration.identifier(), value);
             }
             // TODO: this isn't supposed to throw an exception, just track it for later
             throw new InternalParserException(new InterpreterIssue.InvalidAssignmentTarget(equals));
@@ -147,16 +157,16 @@ public class Parser {
         return expression;
     }
 
-    private Expr equality() {
-        Expr left = comparison();
+    private Expression equality() {
+        Expression left = comparison();
         while (true) {
             final Token currentToken = tokens.get(current);
             if (currentToken instanceof Token.BangEqual bangEqual) {
                 advance();
-                left = new Expr.Binary(left, bangEqual, comparison());
+                left = new Expression.Binary(left, bangEqual, comparison());
             } else if (currentToken instanceof Token.EqualEqual equalEqual) {
                 advance();
-                left = new Expr.Binary(left, equalEqual, comparison());
+                left = new Expression.Binary(left, equalEqual, comparison());
             } else {
                 break;
             }
@@ -164,22 +174,22 @@ public class Parser {
         return left;
     }
 
-    private Expr comparison() {
-        Expr left = term();
+    private Expression comparison() {
+        Expression left = term();
         while (true) {
             final Token currentToken = tokens.get(current);
             if (currentToken instanceof Token.Less less) {
                 advance();
-                left = new Expr.Binary(left, less, term());
+                left = new Expression.Binary(left, less, term());
             } else if (currentToken instanceof Token.LessEqual lessEqual) {
                 advance();
-                left = new Expr.Binary(left, lessEqual, term());
+                left = new Expression.Binary(left, lessEqual, term());
             } else if (currentToken instanceof Token.Greater greater) {
                 advance();
-                left = new Expr.Binary(left, greater, term());
+                left = new Expression.Binary(left, greater, term());
             } else if (currentToken instanceof Token.GreaterEqual greaterEqual) {
                 advance();
-                left = new Expr.Binary(left, greaterEqual, term());
+                left = new Expression.Binary(left, greaterEqual, term());
             } else {
                 break;
             }
@@ -187,16 +197,16 @@ public class Parser {
         return left;
     }
 
-    private Expr term() {
-        Expr left = factor();
+    private Expression term() {
+        Expression left = factor();
         while (true) {
             final Token currentToken = tokens.get(current);
             if (currentToken instanceof Token.Minus minus) {
                 advance();
-                left = new Expr.Binary(left, minus, factor());
+                left = new Expression.Binary(left, minus, factor());
             } else if (currentToken instanceof Token.Plus plus) {
                 advance();
-                left = new Expr.Binary(left, plus, factor());
+                left = new Expression.Binary(left, plus, factor());
             } else {
                 break;
             }
@@ -204,16 +214,16 @@ public class Parser {
         return left;
     }
 
-    private Expr factor() {
-        Expr left = unary();
+    private Expression factor() {
+        Expression left = unary();
         while (true) {
             final Token currentToken = tokens.get(current);
             if (currentToken instanceof Token.Slash slash) {
                 advance();
-                left = new Expr.Binary(left, slash, unary());
+                left = new Expression.Binary(left, slash, unary());
             } else if (currentToken instanceof Token.Star star) {
                 advance();
-                left = new Expr.Binary(left, star, unary());
+                left = new Expression.Binary(left, star, unary());
             } else {
                 break;
             }
@@ -221,33 +231,33 @@ public class Parser {
         return left;
     }
 
-    private Expr unary() {
+    private Expression unary() {
         final Token currentToken = tokens.get(current);
         if (currentToken instanceof Token.UnaryOperator unaryOperator) {
             advance();
-            return new Expr.Unary(unaryOperator, unary());
+            return new Expression.Unary(unaryOperator, unary());
         } else {
             return primary();
         }
     }
 
-    private Expr primary() {
+    private Expression primary() {
         final Token currentToken = tokens.get(current);
         if (currentToken instanceof Token.Literal literal) {
             advance();
-            return new Expr.Literal(literal);
+            return new Expression.Literal(literal);
         }
         if (currentToken instanceof Token.Identifier identifier) {
             advance();
-            return new Expr.Variable(identifier);
+            return new Expression.Variable(identifier);
         }
         if (currentToken instanceof Token.LeftParenthesis leftParenthesis) {
             advance();
-            final Expr innerExpression = expression();
+            final Expression innerExpression = expression();
             final Token nextToken = tokens.get(current);
             if (nextToken instanceof Token.RightParenthesis) {
                 advance();
-                return new Expr.Grouping(innerExpression);
+                return new Expression.Grouping(innerExpression);
             }
             throw new InternalParserException(new InterpreterIssue.UnterminatedGrouping(leftParenthesis));
         }

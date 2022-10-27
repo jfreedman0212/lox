@@ -2,6 +2,14 @@ package dev.freedman.jlox;
 
 import java.util.List;
 
+/**
+ * Containing all the possible types of issues that can come up during any phase of
+ * the interpreter: scanning, parsing, and actual execution issues are all contained in this type.
+ * <p>
+ *    In one way or another, the line in which the error occurred is stored in each record. Sometimes
+ *    that is directly, other times it's through storing the {@link Token}.
+ * </p>
+ */
 public sealed interface InterpreterIssue {
     public record InvalidCharacter(char c, int line) implements InterpreterIssue {
     }

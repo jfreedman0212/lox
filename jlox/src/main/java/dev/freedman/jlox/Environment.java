@@ -4,6 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Contains variables for a specific scope. Variables can be accessed from the
+ * current scope and any enclosing ones, and they can also be shadowed by lower
+ * scopes.
+ */
 public class Environment {
     private final Map<String, Object> variables;
     private final Environment enclosingEnvironment;
