@@ -14,4 +14,7 @@ public sealed interface Stmt {
 
     public record Block(List<Stmt> statements) implements Stmt {
     }
+
+    public record If(Expr condition, Stmt thenBranch, Stmt elseBranch) implements Stmt {
+    }
 }

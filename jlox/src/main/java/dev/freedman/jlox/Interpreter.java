@@ -28,6 +28,13 @@ public class Interpreter {
             } finally {
                 this.environment = outerEnvironment;
             }
+        } else if (statement instanceof Stmt.If ifStatement) {
+            final boolean condition = Token.isTruthy(executeExpression(ifStatement.condition()));
+            if (condition) {
+                execute(ifStatement.thenBranch());
+            } else if (Objects.nonNull(ifStatement.elseBranch())) {
+                execute(ifStatement.elseBranch());
+            }
         }
     }
 

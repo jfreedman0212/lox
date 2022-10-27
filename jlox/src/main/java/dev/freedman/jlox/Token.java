@@ -5,10 +5,10 @@ import java.util.Collections;
 import java.util.Objects;
 
 public sealed interface Token {
+    int line();
+
     public sealed interface Literal extends Token {
     }
-
-    int line();
 
     public sealed interface BinaryOperator extends Token {
         Object evaluateBinaryOperation(Object left, Object right) throws InterpreterException;
@@ -131,18 +131,7 @@ public sealed interface Token {
     public record Bang(char lexeme, int line) implements UnaryOperator {
         @Override
         public Object evaluateUnaryOperation(Object right) throws InterpreterException {
-            final boolean booleanToNegate;
-            if (Objects.isNull(right)) {
-                // nil gets coalesced to false (i.e. nil is "falsy")
-                booleanToNegate = false;
-            } else if (right instanceof Boolean bool) {
-                // booleans are treated as they are
-                booleanToNegate = bool;
-            } else {
-                // all other values coalesce to true (i.e. all other values are "truthy")
-                booleanToNegate = true;
-            }
-            return !booleanToNegate;
+            return !isTruthy(right);
         }
     }
 
@@ -286,5 +275,18 @@ public sealed interface Token {
     // endregion
 
     public record EndOfFile(int line) implements Token {
+    }
+
+    public static boolean isTruthy(final Object value) {
+        // nil gets coalesced to false (i.e. nil is "falsy")
+        if (Objects.isNull(value)) {
+            return false;
+        }
+        // booleans are treated as they are
+        if (value instanceof Boolean bool) {
+            return bool;
+        }
+        // all other values coalesce to true (i.e. all other values are "truthy")
+        return true;
     }
 }

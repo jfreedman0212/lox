@@ -71,8 +71,35 @@ public class Parser {
         } else if (currentToken instanceof Token.LeftBrace starter) {
             advance();
             return new Stmt.Block(block(starter));
+        } else if (currentToken instanceof Token.If) {
+            advance();
+            return ifStatement();
         }
         return expressionStatement();
+    }
+
+    private Stmt.If ifStatement() {
+        final Token potentialOpeningParen = tokens.get(current);
+        if (!(potentialOpeningParen instanceof Token.LeftParenthesis)) {
+            throw new InternalParserException(new InterpreterIssue.UnexpectedToken(potentialOpeningParen));
+        }
+        advance();
+        final Expr condition = expression();
+        final Token potentialClosingParen = tokens.get(current);
+        if (!(potentialClosingParen instanceof Token.RightParenthesis)) {
+            throw new InternalParserException(new InterpreterIssue.UnterminatedGrouping(potentialOpeningParen));
+        }
+        advance();
+        final Stmt thenBranch = statement();
+        final Token potentialElse = tokens.get(current);
+        final Stmt elseBranch;
+        if (potentialElse instanceof Token.Else elseToken) {
+            advance();
+            elseBranch = statement();
+        } else {
+            elseBranch = null;
+        }
+        return new Stmt.If(condition, thenBranch, elseBranch);
     }
 
     private List<Stmt> block(Token.LeftBrace starter) {
