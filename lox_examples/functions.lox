@@ -5,3 +5,4 @@ for (var i = 0; i < 1000000; i = i + 1) {
     var blah = something / 3489438;
 }
 print clock();
+10(); // this should fail
