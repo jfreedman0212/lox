@@ -13,5 +13,5 @@ if (x <= 10) {
 } else {
     print "!!!!";
 }
-print x and "!!!"; // !!!
+print x and "!!!!!"; // !!!
 print nil or x; // 1000
