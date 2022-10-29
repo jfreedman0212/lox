@@ -15,3 +15,9 @@ if (x <= 10) {
 }
 print x and "!!!!!"; // !!!
 print nil or x; // 1000
+// loop time B)
+var loop = 0;
+while (loop <= 10) {
+    print loop;
+    loop = loop + 2;
+}

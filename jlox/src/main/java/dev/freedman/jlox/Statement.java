@@ -17,4 +17,7 @@ public sealed interface Statement {
 
     public record If(Expression condition, Statement thenBranch, Statement elseBranch) implements Statement {
     }
+
+    public record WhileLoop(Expression condition, Statement body) implements Statement {
+    }
 }

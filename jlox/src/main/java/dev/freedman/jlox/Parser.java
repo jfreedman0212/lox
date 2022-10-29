@@ -97,8 +97,27 @@ public class Parser {
         } else if (currentToken instanceof Token.If) {
             advance();
             return ifStatement();
+        } else if (currentToken instanceof Token.While) {
+            advance();
+            return whileLoop();
         }
         return expressionStatement();
+    }
+
+    private Statement.WhileLoop whileLoop() {
+        final Token potentialOpeningParen = tokens.get(current);
+        if (!(potentialOpeningParen instanceof Token.LeftParenthesis)) {
+            throw new InternalParserException(new InterpreterIssue.UnexpectedToken(potentialOpeningParen));
+        }
+        advance();
+        final Expression condition = expression();
+        final Token potentialClosingParen = tokens.get(current);
+        if (!(potentialClosingParen instanceof Token.RightParenthesis)) {
+            throw new InternalParserException(new InterpreterIssue.UnterminatedGrouping(potentialOpeningParen));
+        }
+        advance();
+        final Statement loopBody = statement();
+        return new Statement.WhileLoop(condition, loopBody);
     }
 
     private Statement.If ifStatement() {

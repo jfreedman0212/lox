@@ -41,6 +41,10 @@ public class Interpreter {
             } else if (Objects.nonNull(ifStatement.elseBranch())) {
                 execute(ifStatement.elseBranch());
             }
+        } else if (statement instanceof Statement.WhileLoop whileLoop) {
+            while (Token.isTruthy(executeExpression(whileLoop.condition()))) {
+                execute(whileLoop.body());
+            }
         }
     }
 
