@@ -74,6 +74,13 @@ public class Interpreter {
             final Object result = this.executeExpression(assignment.assignee());
             environment.assign(identifier, result);
             return result;
+        } else if (expr instanceof Expression.Logical logical) {
+            final Object left = executeExpression(logical.left());
+            if ((logical.operator() instanceof Token.And && !Token.isTruthy(left))
+                    || (logical.operator() instanceof Token.Or && Token.isTruthy(left))) {
+                return left;
+            }
+            return executeExpression(logical.right());
         }
         return null;
     }

@@ -10,6 +10,9 @@ public sealed interface Token {
     public sealed interface Literal extends Token {
     }
 
+    public sealed interface Logical extends Token {
+    }
+
     public sealed interface BinaryOperator extends Token {
         Object evaluateBinaryOperation(Object left, Object right) throws InterpreterException;
     }
@@ -225,7 +228,7 @@ public sealed interface Token {
     // endregion
 
     // region Keywords
-    public record And(String lexeme, int line) implements Token {
+    public record And(String lexeme, int line) implements Logical {
     }
 
     public record Class(String lexeme, int line) implements Token {
@@ -249,7 +252,7 @@ public sealed interface Token {
     public record Nil(String lexeme, int line) implements Literal {
     }
 
-    public record Or(String lexeme, int line) implements Token {
+    public record Or(String lexeme, int line) implements Logical {
     }
 
     public record Print(String lexeme, int line) implements Token {

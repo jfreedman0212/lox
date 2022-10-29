@@ -19,4 +19,7 @@ public sealed interface Expression {
 
     public record Assignment(Token.Identifier identifier, Expression assignee) implements Expression {
     }
+
+    public record Logical(Expression left, Token.Logical operator, Expression right) implements Expression {
+    }
 }

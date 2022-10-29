@@ -30,6 +30,10 @@ public class Parser {
             try {
                 statements.add(declaration());
             } catch (final InternalParserException e) {
+                e.printStackTrace();
+                for (int i = 0; i < statements.size(); ++i) {
+                    System.out.printf("%d: %s\n", i + 1, statements.get(i));
+                }
                 // track the issue
                 issues.add(e.issue);
                 // find the next "statement boundary" to keep going from.
@@ -152,7 +156,7 @@ public class Parser {
     }
 
     private Expression assignment() {
-        final Expression expression = equality();
+        final Expression expression = or();
         final Token currentToken = tokens.get(current);
         if (currentToken instanceof Token.Equal equals) {
             advance();
@@ -161,6 +165,30 @@ public class Parser {
                 return new Expression.Assignment(variableDeclaration.identifier(), value);
             }
             throw new InternalParserException(new InterpreterIssue.InvalidAssignmentTarget(equals));
+        }
+        return expression;
+    }
+
+    private Expression or() {
+        Expression expression = and();
+        Token currentToken = tokens.get(current);
+        while (currentToken instanceof Token.Or orToken) {
+            advance();
+            final Expression right = and();
+            expression = new Expression.Logical(expression, orToken, right);
+            currentToken = tokens.get(current);
+        }
+        return expression;
+    }
+
+    private Expression and() {
+        Expression expression = equality();
+        Token currentToken = tokens.get(current);
+        while (currentToken instanceof Token.And andToken) {
+            advance();
+            final Expression right = equality();
+            expression = new Expression.Logical(expression, andToken, right);
+            currentToken = tokens.get(current);
         }
         return expression;
     }
