@@ -1,5 +1,7 @@
 package dev.freedman.jlox;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -9,10 +11,35 @@ import java.util.Objects;
  * a full file and for the REPL.
  */
 public class Interpreter {
+    private final Environment globals;
     private Environment environment;
 
     public Interpreter() {
-        this.environment = new Environment();
+        globals = new Environment();
+        environment = globals;
+        try {
+            globals.declare(new Token.Identifier("clock", 0), new LoxCallable() {
+                @Override
+                public int arity() {
+                    return 0;
+                }
+
+                @Override
+                public Object call(Interpreter interpreter, List<Object> arguments) {
+                    final double currentTime = (double) System.currentTimeMillis();
+                    return currentTime / 1000.0;
+                }
+
+                @Override
+                public String toString() {
+                    return "<native fn>";
+                }
+            });
+        } catch (final InterpreterException e) {
+            // convert to an unchecked exception because there's nothing that
+            // can be done if this operation fails!
+            throw new RuntimeException(e);
+        }
     }
 
     public void execute(final Statement statement) throws InterpreterException {
@@ -85,6 +112,20 @@ public class Interpreter {
                 return left;
             }
             return executeExpression(logical.right());
+        } else if (expr instanceof Expression.Call call) {
+            final Object callee = executeExpression(call.callee());
+            final List<Object> arguments = new ArrayList<>();
+            for (final Expression argument : call.arguments()) {
+                arguments.add(this.executeExpression(argument));
+            }
+            if (callee instanceof LoxCallable loxCallable) {
+                if (loxCallable.arity() != arguments.size()) {
+                    throw new InterpreterException(new InterpreterIssue.InvalidNumberOfArguments(arguments.size(),
+                            loxCallable.arity(), call.closingParen()));
+                }
+                return loxCallable.call(this, arguments);
+            }
+            throw new InterpreterException(new InterpreterIssue.ValueNotCallable(callee, call.closingParen()));
         }
         return null;
     }

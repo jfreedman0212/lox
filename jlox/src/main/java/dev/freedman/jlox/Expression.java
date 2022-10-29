@@ -1,5 +1,7 @@
 package dev.freedman.jlox;
 
+import java.util.List;
+
 public sealed interface Expression {
     public record Binary(Expression left, Token.BinaryOperator operator, Expression right)
             implements Expression {
@@ -21,5 +23,9 @@ public sealed interface Expression {
     }
 
     public record Logical(Expression left, Token.Logical operator, Expression right) implements Expression {
+    }
+
+    public record Call(Expression callee, Token.RightParenthesis closingParen, List<Expression> arguments)
+            implements Expression {
     }
 }

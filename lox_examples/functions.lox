@@ -1,0 +1,7 @@
+print clock();
+for (var i = 0; i < 1000000; i = i + 1) {
+    // do some meaningless work
+    var something = i * 100;
+    var blah = something / 3489438;
+}
+print clock();

@@ -349,9 +349,46 @@ public class Parser {
         if (currentToken instanceof Token.UnaryOperator unaryOperator) {
             advance();
             return new Expression.Unary(unaryOperator, unary());
-        } else {
-            return primary();
         }
+        return call();
+    }
+
+    private Expression call() {
+        Expression expression = primary();
+        while (true) {
+            final Token currentToken = tokens.get(current);
+            if (currentToken instanceof Token.LeftParenthesis) {
+                advance();
+                expression = finishCall(expression);
+            } else {
+                break;
+            }
+        }
+        return expression;
+    }
+
+    private Expression finishCall(final Expression callee) {
+        final List<Expression> arguments = new ArrayList<>();
+        final Token potentialClosingParen = tokens.get(current);
+        if (!(potentialClosingParen instanceof Token.RightParenthesis)) {
+            Token currentToken;
+            do {
+                arguments.add(expression());
+                currentToken = tokens.get(current);
+            } while (currentToken instanceof Token.Comma && advance() != null); // gross...
+        }
+        if (arguments.size() > 255) {
+            // again, don't throw since this isn't invalid syntax, just invalid semantics
+            // that we don't want to reach the parser
+            this.issues.add(new InterpreterIssue.ExceededMaximumFunctionArguments(arguments.size(), 255,
+                    potentialClosingParen.line()));
+        }
+        final Token currentToken = tokens.get(current);
+        if (currentToken instanceof Token.RightParenthesis closingParen) {
+            advance();
+            return new Expression.Call(callee, closingParen, arguments);
+        }
+        throw new InternalParserException(new InterpreterIssue.UnexpectedToken(currentToken));
     }
 
     private Expression primary() {
