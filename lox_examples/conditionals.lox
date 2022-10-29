@@ -21,3 +21,15 @@ while (loop <= 10) {
     print loop;
     loop = loop + 2;
 }
+// stupid, probably wrong, fizzbuzz without modulo operator
+for (var i = 0; i < 20; i = i + 1) {
+    if (i == 3 or i == 6 or i == 9 or i == 12 or i == 18) {
+        print "fizz";
+    } else if (i == 5 or i == 10) {
+        print "buzz";
+    } else if (i == 15) {
+        print "fizzbuzz";
+    } else {
+        print i;
+    }
+}

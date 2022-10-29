@@ -1,0 +1,3 @@
+for (;;) {
+    print "welcome to hell";
+}

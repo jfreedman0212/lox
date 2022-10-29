@@ -1,7 +1,9 @@
 package dev.freedman.jlox;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Takes a list of tokens and produces a list of statements. This represents
@@ -100,8 +102,64 @@ public class Parser {
         } else if (currentToken instanceof Token.While) {
             advance();
             return whileLoop();
+        } else if (currentToken instanceof Token.For) {
+            advance();
+            return forLoop();
         }
         return expressionStatement();
+    }
+
+    private Statement forLoop() {
+        // read the opening parenthesis
+        final Token potentialOpeningParen = tokens.get(current);
+        if (!(potentialOpeningParen instanceof Token.LeftParenthesis)) {
+            throw new InternalParserException(new InterpreterIssue.UnexpectedToken(potentialOpeningParen));
+        }
+        advance();
+        // read the initializer expression (if there is one)
+        final Statement initializer;
+        Token currentToken = tokens.get(current);
+        if (currentToken instanceof Token.Semicolon) {
+            advance();
+            initializer = null;
+        } else if (currentToken instanceof Token.Var) {
+            advance();
+            initializer = variableDeclaration();
+        } else {
+            initializer = expressionStatement();
+        }
+        // read the condition expression (if there is one)
+        final Expression condition;
+        currentToken = tokens.get(current);
+        if (currentToken instanceof Token.Semicolon) {
+            // uhhhhhhhhhhhhhhhh, this feels weird. I'm saying that this "token"
+            // is on the same line as the current one, even though it doesn't exist.
+            // this will surely lead to weird error messages about a token that isn't real
+            condition = new Expression.Literal(new Token.True("true", currentToken.line()));
+        } else {
+            condition = expression();
+        }
+        advance(); // consumes the semicolon
+        // read the increment expression (if there is one)
+        final Expression increment;
+        currentToken = tokens.get(current);
+        if (!(currentToken instanceof Token.RightParenthesis)) {
+            increment = expression();
+        } else {
+            increment = null;
+        }
+        currentToken = tokens.get(current);
+        if (!(currentToken instanceof Token.RightParenthesis)) {
+            throw new InternalParserException(new InterpreterIssue.UnterminatedGrouping(potentialOpeningParen));
+        }
+        advance();
+        // finally, desugar the for loop into an equivalent while loop
+        final Statement loopBody = statement();
+        return new Statement.Block(Arrays.asList(
+                initializer,
+                new Statement.WhileLoop(condition, Objects.nonNull(increment) ? new Statement.Block(Arrays.asList(
+                        loopBody,
+                        new Statement.ExpressionStatement(increment))) : loopBody)));
     }
 
     private Statement.WhileLoop whileLoop() {
