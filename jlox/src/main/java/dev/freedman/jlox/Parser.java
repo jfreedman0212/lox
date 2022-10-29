@@ -32,10 +32,6 @@ public class Parser {
             try {
                 statements.add(declaration());
             } catch (final InternalParserException e) {
-                e.printStackTrace();
-                for (int i = 0; i < statements.size(); ++i) {
-                    System.out.printf("%d: %s\n", i + 1, statements.get(i));
-                }
                 // track the issue
                 issues.add(e.issue);
                 // find the next "statement boundary" to keep going from.
@@ -241,7 +237,11 @@ public class Parser {
             if (expression instanceof Expression.Variable variableDeclaration) {
                 return new Expression.Assignment(variableDeclaration.identifier(), value);
             }
-            throw new InternalParserException(new InterpreterIssue.InvalidAssignmentTarget(equals));
+            // this doesn't need to bail out of parsing because we haven't gotten into
+            // an unworkable state. the syntax itself is fine so far, but it doesn't
+            // make any semantic sense. so, we report the error, but continue parsing
+            // as if nothing went wrong
+            this.issues.add(new InterpreterIssue.InvalidAssignmentTarget(equals));
         }
         return expression;
     }
