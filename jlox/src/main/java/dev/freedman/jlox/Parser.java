@@ -156,8 +156,25 @@ public class Parser {
         } else if (currentToken instanceof Token.For) {
             advance();
             return forLoop();
+        } else if (currentToken instanceof Token.Return returnToken) {
+            advance();
+            return returnStatement(returnToken);
         }
         return expressionStatement();
+    }
+
+    private Statement.Return returnStatement(final Token.Return returnKeyword) {
+        final Expression value;
+        if (!(tokens.get(current) instanceof Token.Semicolon)) {
+            value = expression();
+        } else {
+            value = null;
+        }
+        if (!(tokens.get(current) instanceof Token.Semicolon)) {
+            throw new InternalParserException(new InterpreterIssue.UnexpectedToken(tokens.get(current)));
+        }
+        advance(); // consume the trailing semicolon
+        return new Statement.Return(returnKeyword, value);
     }
 
     private Statement forLoop() {

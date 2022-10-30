@@ -66,6 +66,14 @@ public class Interpreter {
             }
         } else if (statement instanceof Statement.Function function) {
             environment.declare(function.name(), new LoxFunction(function));
+        } else if (statement instanceof Statement.Return returnStatement) {
+            final Object value;
+            if (Objects.nonNull(returnStatement.value())) {
+                value = executeExpression(returnStatement.value());
+            } else {
+                value = null;
+            }
+            throw new Return(value);
         }
     }
 
