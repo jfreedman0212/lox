@@ -1,0 +1,16 @@
+var i = 0;
+assert i == 0;
+while (i < 100) {
+    i = i + 1;
+}
+assert i == 100;
+
+var previousValue = -1;
+for (var i = 0; i < 500; i = i + 1) {
+    assert i - 1 == previousValue;
+    assert i == previousValue + 1;
+    previousValue = previousValue + 1;
+}
+// the i from the for loop doesn't interfere with the
+// variable from the global scope
+assert i == 100;

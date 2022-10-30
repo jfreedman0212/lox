@@ -1,0 +1,19 @@
+var x = 10;
+if (x == 10) {
+    print "x = 10";
+} else {
+    assert false;
+}
+x = 1000;
+if (x <= 10) {
+    assert false;
+} else if (x > 10) {
+    print "x is greater than 10";
+} else {
+    assert false;
+}
+var andResult = x and "!!!!";
+assert andResult == "!!!!";
+
+var orResult = nil or x;
+assert orResult == x;
