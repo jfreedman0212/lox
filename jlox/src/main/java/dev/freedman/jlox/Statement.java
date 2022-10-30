@@ -20,4 +20,7 @@ public sealed interface Statement {
 
     public record WhileLoop(Expression condition, Statement body) implements Statement {
     }
+
+    public record Function(Token.Identifier name, List<Token.Identifier> parameters, Statement.Block body) implements Statement {
+    }
 }

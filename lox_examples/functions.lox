@@ -5,4 +5,14 @@ for (var i = 0; i < 1000000; i = i + 1) {
     var blah = something / 3489438;
 }
 print clock();
+fun add(a, b) {
+    print a + b;
+}
+add(2, 2); // should be 4
+fun doSomethingCool() {
+    print "in do something cool!";
+}
+doSomethingCool();
+var alias = doSomethingCool;
+alias();
 10(); // this should fail

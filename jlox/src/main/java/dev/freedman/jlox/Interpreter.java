@@ -11,7 +11,7 @@ import java.util.Objects;
  * a full file and for the REPL.
  */
 public class Interpreter {
-    private final Environment globals;
+    final Environment globals;
     private Environment environment;
 
     public Interpreter() {
@@ -32,7 +32,7 @@ public class Interpreter {
 
                 @Override
                 public String toString() {
-                    return "<native fn>";
+                    return "<native fun clock>";
                 }
             });
         } catch (final InterpreterException e) {
@@ -52,15 +52,7 @@ public class Interpreter {
             final Object resolvedValue = Objects.nonNull(expression) ? this.executeExpression(expression) : null;
             environment.declare(variableDeclaration.identifier(), resolvedValue);
         } else if (statement instanceof Statement.Block block) {
-            final Environment outerEnvironment = this.environment;
-            try {
-                this.environment = new Environment(outerEnvironment);
-                for (final Statement nestedStatement : block.statements()) {
-                    this.execute(nestedStatement);
-                }
-            } finally {
-                this.environment = outerEnvironment;
-            }
+            executeBlock(block, new Environment(environment));
         } else if (statement instanceof Statement.If ifStatement) {
             final boolean condition = Token.isTruthy(executeExpression(ifStatement.condition()));
             if (condition) {
@@ -72,6 +64,8 @@ public class Interpreter {
             while (Token.isTruthy(executeExpression(whileLoop.condition()))) {
                 execute(whileLoop.body());
             }
+        } else if (statement instanceof Statement.Function function) {
+            environment.declare(function.name(), new LoxFunction(function));
         }
     }
 
@@ -128,5 +122,17 @@ public class Interpreter {
             throw new InterpreterException(new InterpreterIssue.ValueNotCallable(callee, call.closingParen()));
         }
         return null;
+    }
+
+    void executeBlock(final Statement.Block block, final Environment environment) throws InterpreterException {
+        final Environment previous = this.environment;
+        try {
+            this.environment = environment;
+            for (final Statement nestedStatement : block.statements()) {
+                this.execute(nestedStatement);
+            }
+        } finally {
+            this.environment = previous;
+        }
     }
 }

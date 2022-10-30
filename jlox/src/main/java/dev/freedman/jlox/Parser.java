@@ -16,6 +16,8 @@ import java.util.Objects;
  * </p>
  */
 public class Parser {
+    private static final int MAX_NUMBER_OF_FUNCTION_PARAMETERS = 255;
+
     private final List<Token> tokens;
     private final List<InterpreterIssue> issues;
     private int current;
@@ -52,8 +54,61 @@ public class Parser {
         if (currentToken instanceof Token.Var) {
             advance();
             return variableDeclaration();
+        } else if (currentToken instanceof Token.Fun) {
+            advance();
+            return function();
         }
         return statement();
+    }
+
+    private Statement.Function function() {
+        final Token potentialFunctionName = tokens.get(current);
+        if (potentialFunctionName instanceof Token.Identifier functionName) {
+            advance();
+            Token currentToken = tokens.get(current);
+            if (!(currentToken instanceof Token.LeftParenthesis)) {
+                throw new InternalParserException(new InterpreterIssue.UnexpectedToken(currentToken));
+            }
+            advance();
+            // creating the parameter list
+            final List<Token.Identifier> parameters = new ArrayList<>();
+            while (true) {
+                currentToken = tokens.get(current);
+                if (currentToken instanceof Token.RightParenthesis) {
+                    // we've reached the end of the parameter list, consume the token and break
+                    advance();
+                    break;
+                } else if (currentToken instanceof Token.Identifier parameter) {
+                    // we've found a parameter, add it to the list and
+                    // consume the comma if there is one
+                    advance();
+                    parameters.add(parameter);
+                    if (tokens.get(current) instanceof Token.Comma comma) {
+                        // peek ahead to make sure we don't have a dangling comma
+                        if (tokens.get(current + 1) instanceof Token.RightParenthesis) {
+                            throw new InternalParserException(new InterpreterIssue.DanglingComma(comma));
+                        }
+                        // otherwise, just consume it and move on
+                        advance();
+                    }
+                } else {
+                    throw new InternalParserException(new InterpreterIssue.UnexpectedToken(currentToken));
+                }
+            }
+            final Statement.Block body;
+            if (tokens.get(current) instanceof Token.LeftBrace openingBrace) {
+                advance();
+                body = new Statement.Block(block(openingBrace));
+            } else {
+                throw new InternalParserException(new InterpreterIssue.UnexpectedToken(tokens.get(current)));
+            }
+            if (parameters.size() > MAX_NUMBER_OF_FUNCTION_PARAMETERS) {
+                issues.add(new InterpreterIssue.ExceededMaximumFunctionArguments(parameters.size(),
+                        MAX_NUMBER_OF_FUNCTION_PARAMETERS, functionName.line()));
+            }
+            return new Statement.Function(functionName, parameters, body);
+        }
+        throw new InternalParserException(new InterpreterIssue.UnexpectedToken(potentialFunctionName));
     }
 
     private Statement variableDeclaration() {
@@ -130,7 +185,8 @@ public class Parser {
         if (currentToken instanceof Token.Semicolon) {
             // uhhhhhhhhhhhhhhhh, this feels weird. I'm saying that this "token"
             // is on the same line as the current one, even though it doesn't exist.
-            // this will surely lead to weird error messages about a token that isn't real
+            // this SHOULDN'T lead to any errors visible to the user, but it will
+            // be stupid difficult to figure out if it does!
             condition = new Expression.Literal(new Token.True("true", currentToken.line()));
         } else {
             condition = expression();
@@ -377,11 +433,13 @@ public class Parser {
                 currentToken = tokens.get(current);
             } while (currentToken instanceof Token.Comma && advance() != null); // gross...
         }
-        if (arguments.size() > 255) {
+        if (arguments.size() > MAX_NUMBER_OF_FUNCTION_PARAMETERS) {
             // again, don't throw since this isn't invalid syntax, just invalid semantics
             // that we don't want to reach the parser
-            this.issues.add(new InterpreterIssue.ExceededMaximumFunctionArguments(arguments.size(), 255,
-                    potentialClosingParen.line()));
+            this.issues.add(
+                    new InterpreterIssue.ExceededMaximumFunctionArguments(arguments.size(),
+                            MAX_NUMBER_OF_FUNCTION_PARAMETERS,
+                            potentialClosingParen.line()));
         }
         final Token currentToken = tokens.get(current);
         if (currentToken instanceof Token.RightParenthesis closingParen) {
