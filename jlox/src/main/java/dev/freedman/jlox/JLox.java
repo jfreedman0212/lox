@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -29,6 +30,10 @@ public class JLox {
                 }
             } catch (final InterpreterException e) {
                 reportError(e.getErrors());
+                System.exit(65); // EX_DATAERR
+            } catch (final Return returnStatement) {
+                reportError(Collections
+                        .singletonList(new InterpreterIssue.ReturnOutsideFunction(returnStatement.getToken())));
                 System.exit(65); // EX_DATAERR
             }
         } else {
@@ -57,6 +62,9 @@ public class JLox {
                     }
                 } catch (final InterpreterException e) {
                     reportError(e.getErrors());
+                } catch (final Return returnStatement) {
+                    reportError(Collections
+                            .singletonList(new InterpreterIssue.ReturnOutsideFunction(returnStatement.getToken())));
                 }
             }
         }

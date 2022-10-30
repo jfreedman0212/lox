@@ -73,7 +73,7 @@ public class Interpreter {
             } else {
                 value = null;
             }
-            throw new Return(value);
+            throw new Return(value, returnStatement.returnKeyword());
         }
     }
 

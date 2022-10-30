@@ -60,4 +60,7 @@ public sealed interface InterpreterIssue {
 
         public record DanglingComma(Token.Comma comma) implements InterpreterIssue {
         }
+
+        public record ReturnOutsideFunction(Token.Return returnToken) implements InterpreterIssue {
+        }
 }
