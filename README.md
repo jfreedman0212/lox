@@ -42,3 +42,9 @@ I added support for an `assert` keyword similar to what C and friends have. If t
 falsy, an `AssertionError` will be bubbled up to the user at runtime. Otherwise, nothing
 happens. I did this because I would like to write tests for Lox _in Lox_ and I figured the
 best way to do that would be to add support for assertions throughout the code.
+
+# JLox Tests
+
+There are several files within the test resources folder that contain different kinds of tests.
+Additionally, a coverage report is created from this, which can be accessed under `jlox/target/site/jacoco/index.html`.
+I understand that code coverage isn't a 100% great metric to use, but it provides a look into where tests can be improved.
