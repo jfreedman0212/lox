@@ -65,7 +65,7 @@ public class Interpreter {
                 execute(whileLoop.body());
             }
         } else if (statement instanceof Statement.Function function) {
-            environment.declare(function.name(), new LoxFunction(function));
+            environment.declare(function.name(), new LoxFunction(function, environment));
         } else if (statement instanceof Statement.Return returnStatement) {
             final Object value;
             if (Objects.nonNull(returnStatement.value())) {
