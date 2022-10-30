@@ -6,7 +6,8 @@ import java.util.List;
 /**
  * Represents the first phase of the interpreter: taking the raw text
  * of the source file and breaking it up into "tokens". Tokens are the smallest
- * meaningful piece of data about a piece of source code. From there, we build up
+ * meaningful piece of data about a piece of source code. From there, we build
+ * up
  * our understanding of the code in the file.
  */
 public class Scanner {
@@ -138,6 +139,7 @@ public class Scanner {
                             case "true" -> new Token.True(lexeme, line);
                             case "var" -> new Token.Var(lexeme, line);
                             case "while" -> new Token.While(lexeme, line);
+                            case "assert" -> new Token.Assert(lexeme, line);
                             default -> new Token.Identifier(lexeme, line);
                         };
                         tokens.add(token);

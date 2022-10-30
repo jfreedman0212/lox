@@ -1,0 +1,4 @@
+// assert isn't part of the Lox language, but
+// something I added to make automated tests easier
+assert 10 > -1; // should pass
+assert false; // should fail

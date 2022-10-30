@@ -27,4 +27,7 @@ public sealed interface Statement {
 
     public record Return(Token.Return returnKeyword, Expression value) implements Statement {
     }
+
+    public record Assert(Token.Assert assertKeyword, Expression expression) implements Statement {
+    }
 }

@@ -36,4 +36,9 @@ type system.
 
 Maybe this will pay off, maybe it won't. Maybe I overused or abused the pattern too...
 
+## The `assert` Keyword
 
+I added support for an `assert` keyword similar to what C and friends have. If the value is
+falsy, an `AssertionError` will be bubbled up to the user at runtime. Otherwise, nothing
+happens. I did this because I would like to write tests for Lox _in Lox_ and I figured the
+best way to do that would be to add support for assertions throughout the code.

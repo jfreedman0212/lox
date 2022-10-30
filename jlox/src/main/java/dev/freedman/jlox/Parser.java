@@ -159,6 +159,11 @@ public class Parser {
         } else if (currentToken instanceof Token.Return returnToken) {
             advance();
             return returnStatement(returnToken);
+        } else if (currentToken instanceof Token.Assert assertKeyword) {
+            advance();
+            // use the expressionStatement production so I don't have to check for a semicolon manually
+            final Statement.ExpressionStatement expressionStatement = expressionStatement();
+            return new Statement.Assert(assertKeyword, expressionStatement.expression());
         }
         return expressionStatement();
     }

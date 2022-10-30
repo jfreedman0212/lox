@@ -275,6 +275,12 @@ public sealed interface Token {
 
     public record While(String lexeme, int line) implements Token {
     }
+
+    /**
+     * This is a custom thing and not part of the Lox spec
+     */
+    public record Assert(String lexeme, int line) implements Token {
+    }
     // endregion
 
     public record EndOfFile(int line) implements Token {

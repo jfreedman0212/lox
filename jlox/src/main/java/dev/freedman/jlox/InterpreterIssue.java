@@ -63,4 +63,8 @@ public sealed interface InterpreterIssue {
 
         public record ReturnOutsideFunction(Token.Return returnToken) implements InterpreterIssue {
         }
+
+        public record AssertionError(Token.Assert assertKeyword, Expression falsyExpression) implements InterpreterIssue {
+        }
+
 }

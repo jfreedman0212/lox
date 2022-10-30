@@ -74,6 +74,12 @@ public class Interpreter {
                 value = null;
             }
             throw new Return(value, returnStatement.returnKeyword());
+        } else if (statement instanceof Statement.Assert assertStatement) {
+            final Object value = executeExpression(assertStatement.expression());
+            if (!Token.isTruthy(value)) {
+                throw new InterpreterException(new InterpreterIssue.AssertionError(assertStatement.assertKeyword(), assertStatement.expression()));
+            }
+            // otherwise, do nothing
         }
     }
 
