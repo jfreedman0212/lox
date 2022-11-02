@@ -1,0 +1,32 @@
+// * has higher precedence than +.
+assert (2 + 3 * 4) == 14;
+
+// * has higher precedence than -.
+assert (20 - 3 * 4) == 8;
+
+// / has higher precedence than +.
+assert (2 + 6 / 3) == 4;
+
+// / has higher precedence than -.
+assert (2 - 6 / 3) == 0;
+
+// < has higher precedence than ==.
+assert false == 2 < 1;
+
+// > has higher precedence than ==.
+assert false == 1 > 2;
+
+// <= has higher precedence than ==.
+assert false == 2 <= 1;
+
+// >= has higher precedence than ==.
+assert false == 1 >= 2;
+
+// 1 - 1 is not space-sensitive.
+assert (1 - 1) == 0;
+assert (1 -1) == 0;
+assert (1- 1) == 0;
+assert (1-1) == 0;
+
+// Using () for grouping.
+assert (2 * (6 - (2 + 2))) == 4;

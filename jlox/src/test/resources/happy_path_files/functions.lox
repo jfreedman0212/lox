@@ -1,0 +1,29 @@
+// making sure clock works
+// can't do too much testing because it's nondeterministic
+assert clock();
+for (var i = 0; i < 1000000; i = i + 1) {
+    // do some meaningless work
+    var something = i * 100;
+    var blah = something / 3489438;
+}
+fun add(a, b) {
+    return a + b;
+}
+assert add(2, 2) == 4;
+fun doSomethingCool() {
+    return 10;
+}
+var alias = doSomethingCool;
+assert alias == doSomethingCool;
+assert alias() == doSomethingCool();
+
+// early return
+fun earlyReturn(a) {
+    if (a == nil) {
+        return;
+    }
+    return a + " world!";
+}
+
+assert !earlyReturn(nil);
+assert earlyReturn("goodbye") == "goodbye world!";
