@@ -17,3 +17,14 @@ var c = "global c";
 assert a == "global a";
 assert b == "global b";
 assert c == "global c";
+
+var someGlobal = "some global";
+{
+    fun showSomeGlobal() {
+        return someGlobal;
+    }
+
+    assert showSomeGlobal() == "some global";
+    var someGlobal = "inner value";
+    assert showSomeGlobal() == "some global";
+}

@@ -43,6 +43,18 @@ falsy, an `AssertionError` will be bubbled up to the user at runtime. Otherwise,
 happens. I did this because I would like to write tests for Lox _in Lox_ and I figured the
 best way to do that would be to add support for assertions throughout the code.
 
+## Visitor Pattern Usage
+
+In jlox, I did not use the Visitor pattern for implementing the `Interpreter` class like
+the book does. Instead, it's a big if-else. I did that mostly out of personal preference:
+flat if-else statements are easier for me to parse than wrapping my head around code
+using the Visitor pattern. Maybe it's just my unfamiliarity with it, and following how
+the book implemented it would help me to that end.
+
+Unfortunately, as I got to Chapter 11 with the variable resolution pass, I regret my
+decision a little bit... Maybe I'll refactor to the Visitor pattern, or maybe I won't.
+At least I understand why it's useful now, though!
+
 # JLox Tests
 
 There are several files within the test resources folder that contain different kinds of tests.
