@@ -1,7 +1,9 @@
 package dev.freedman.jlox;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -13,10 +15,12 @@ import java.util.Objects;
 public class Interpreter {
     final Environment globals;
     private Environment environment;
+    private final Map<Expression, Integer> locals;
 
     public Interpreter() {
         globals = new Environment();
         environment = globals;
+        this.locals = new HashMap<>();
         try {
             globals.declare(new Token.Identifier("clock", 0), new LoxCallable() {
                 @Override
@@ -48,7 +52,7 @@ public class Interpreter {
         } else if (statement instanceof Statement.ExpressionStatement expressionStatement) {
             this.executeExpression(expressionStatement.expression());
         } else if (statement instanceof Statement.VariableDeclaration variableDeclaration) {
-            final Expression expression = variableDeclaration.expression();
+            final Expression expression = variableDeclaration.initializer();
             final Object resolvedValue = Objects.nonNull(expression) ? this.executeExpression(expression) : null;
             environment.declare(variableDeclaration.identifier(), resolvedValue);
         } else if (statement instanceof Statement.Block block) {
@@ -77,7 +81,8 @@ public class Interpreter {
         } else if (statement instanceof Statement.Assert assertStatement) {
             final Object value = executeExpression(assertStatement.expression());
             if (!Token.isTruthy(value)) {
-                throw new InterpreterException(new InterpreterIssue.AssertionError(assertStatement.assertKeyword(), assertStatement.expression()));
+                throw new InterpreterException(new InterpreterIssue.AssertionError(assertStatement.assertKeyword(),
+                        assertStatement.expression()));
             }
             // otherwise, do nothing
         }
@@ -107,11 +112,16 @@ public class Interpreter {
             final Object right = executeExpression(binaryExpr.right());
             return binaryExpr.operator().evaluateBinaryOperation(left, right);
         } else if (expr instanceof Expression.Variable variable) {
-            return environment.retrieve(variable.identifier());
+            return lookupVariable(variable.identifier(), variable);
         } else if (expr instanceof Expression.Assignment assignment) {
-            final Token.Identifier identifier = assignment.identifier();
             final Object result = this.executeExpression(assignment.assignee());
-            environment.assign(identifier, result);
+            final Integer distance = locals.get(assignment);
+            if (Objects.nonNull(distance)) {
+                environment.assignAt(distance, assignment.identifier(), result);
+            } else {
+                globals.assign(assignment.identifier(), result);
+            }
+            environment.assign(assignment.identifier(), result);
             return result;
         } else if (expr instanceof Expression.Logical logical) {
             final Object left = executeExpression(logical.left());
@@ -136,6 +146,18 @@ public class Interpreter {
             throw new InterpreterException(new InterpreterIssue.ValueNotCallable(callee, call.closingParen()));
         }
         return null;
+    }
+
+    public void resolve(final Expression expression, final int depth) {
+        locals.put(expression, depth);
+    }
+
+    private Object lookupVariable(final Token.Identifier identifier, final Expression expression) throws InterpreterException {
+        final Integer distance = locals.get(expression);
+        if (Objects.nonNull(distance)) {
+            return environment.getAt(distance, identifier);
+        }
+        return globals.retrieve(identifier);
     }
 
     void executeBlock(final Statement.Block block, final Environment environment) throws InterpreterException {

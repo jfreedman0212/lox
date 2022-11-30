@@ -9,7 +9,7 @@ public sealed interface Statement {
     public record ExpressionStatement(Expression expression) implements Statement {
     }
 
-    public record VariableDeclaration(Token.Identifier identifier, Expression expression) implements Statement {
+    public record VariableDeclaration(Token.Identifier identifier, Expression initializer) implements Statement {
     }
 
     public record Block(List<Statement> statements) implements Statement {

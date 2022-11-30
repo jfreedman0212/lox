@@ -44,6 +44,19 @@ public class Environment {
         variables.put(identifier.lexeme(), value);
     }
 
+    public void assignAt(final int distance, final Token.Identifier identifier, final Object value) {
+        final Environment ancestor = ancestor(distance);
+        // run this as a sanity check. this shouldn't happen, but better to explicitly
+        // handle it (even as something that just blows up) than let it bubble up
+        // without any identifying information
+        if (!ancestor.variables.containsKey(identifier.lexeme())) {
+            throw new RuntimeException(String.format(
+                    "Ancestor at depth %d does not contain variable %s used on line %d. This should have been verified by the variable resolution phase, but wasn't.",
+                    distance, identifier.lexeme(), identifier.line()));
+        }
+        ancestor.variables.put(identifier.lexeme(), value);
+    }
+
     public Object retrieve(final Token.Identifier identifier) throws InterpreterException {
         if (!variables.containsKey(identifier.lexeme())) {
             // if we can't find it AND this is the root environment,
@@ -56,5 +69,26 @@ public class Environment {
             return enclosingEnvironment.retrieve(identifier);
         }
         return variables.get(identifier.lexeme());
+    }
+
+    public Object getAt(final int distance, final Token.Identifier identifier) {
+        final Environment ancestor = ancestor(distance);
+        // run this as a sanity check. this shouldn't happen, but better to explicitly
+        // handle it (even as something that just blows up) than let it bubble up
+        // without any identifying information
+        if (!ancestor.variables.containsKey(identifier.lexeme())) {
+            throw new RuntimeException(String.format(
+                    "Ancestor at depth %d does not contain variable %s used on line %d. This should have been verified by the variable resolution phase, but wasn't.",
+                    distance, identifier.lexeme(), identifier.line()));
+        }
+        return ancestor.variables.get(identifier.lexeme());
+    }
+
+    private Environment ancestor(final int distance) {
+        Environment environment = this;
+        for (int i = 0; i < distance; ++i) {
+            environment = environment.enclosingEnvironment;
+        }
+        return environment;
     }
 }
