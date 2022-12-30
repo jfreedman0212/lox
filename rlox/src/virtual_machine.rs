@@ -79,3 +79,36 @@ impl<BufferType: Buf> VirtualMachine<BufferType> {
         self.value_stack.pop()
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use bytes::Bytes;
+
+    #[test]
+    fn smoke_test() {
+        // Arrange
+        let operations = Bytes::from_static(&[
+            // 1. Load constant 0 onto stack
+            OP_CONSTANT,
+            0,
+            // 2. Load constant 1 onto stack
+            OP_CONSTANT,
+            1,
+            // 3. Add previous 2 stack items, put result on stack
+            OP_ADD,
+            // 4. Load constant 1 onto stack
+            OP_CONSTANT,
+            1,
+            // 5. Multiply previous 2 stack items, put result on stack
+            OP_MULTIPLY,
+        ]);
+        let constants = vec![Value::Number(1.0), Value::Number(2.0)];
+        let mut vm = VirtualMachine::new(operations, constants);
+        // Act
+        vm.run().unwrap();
+        // Assert
+        assert_eq!(Some(Value::Number(6.0)), vm.pop_from_stack());
+        assert_eq!(0, vm.value_stack.len());
+    }
+}

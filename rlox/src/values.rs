@@ -1,11 +1,9 @@
-type LoxNumber = f64;
-type LoxString = String;
+#![allow(dead_code)]
 
-#[allow(dead_code)]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Value {
-    Number(LoxNumber),
-    String(LoxString),
+    Number(f64),
+    String(std::string::String),
     Boolean(bool),
     Nil,
 }
